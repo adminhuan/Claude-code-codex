@@ -1,9 +1,0 @@
-{
-  "servers": {
-    "ai-rule-mcp": {
-      "command": "ai-rule-mcp-server",
-      "args": [],
-      "description": "AI规则遵守MCP工具 - 全局安装版本"
-    }
-  }
-}

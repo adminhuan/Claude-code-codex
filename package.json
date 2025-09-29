@@ -1,7 +1,7 @@
 {
   "name": "ai-rule-mcp-server",
-  "version": "0.2.1",
-  "description": "AI规则遵守MCP工具服务器 - 38个AI编码规范和协作工具",
+  "version": "0.3.0",
+  "description": "AI规则遵守MCP工具服务器 - 38个AI编码规范和协作工具 + 智能监督指导功能",
   "main": "mcp_server_node.js",
   "type": "module",
   "bin": {
@@ -41,7 +41,11 @@
   "files": [
     "mcp_server_node.js",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "USAGE_GUIDE.md",
+    "install.sh",
+    "install-to-project.sh",
+    "auto-install-global.sh"
   ],
   "publishConfig": {
     "access": "public"

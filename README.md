@@ -17,41 +17,34 @@
 
 ## 🚀 快速开始
 
-### 1. 克隆项目
+### ⚡ 一键安装 (推荐)
 ```bash
+# 方法1: 直接从PyPI安装
+pip install ai-rule-mcp-server
+ai-rule-mcp install
+
+# 方法2: 一键安装脚本
+curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/install.sh | bash
+```
+
+### 🔧 手动安装
+```bash
+# 1. 克隆项目
 git clone https://github.com/adminhuan/Claude-code-codex.git
 cd Claude-code-codex
-```
 
-### 2. 安装依赖
-```bash
+# 2. 安装依赖
 pip install -r requirements.txt
+
+# 3. 安装到系统
+pip install -e .
+
+# 4. 配置MCP
+ai-rule-mcp install
 ```
 
-### 3. 配置MCP客户端
-在支持MCP的AI工具中配置服务器：
-
-1. 打开AI工具的MCP设置
-2. 找到MCP服务器配置选项
-3. 添加以下配置（将路径替换为实际路径）：
-
-```json
-{
-  "mcpServers": {
-    "ai-rule-mcp": {
-      "command": "python3",
-      "args": ["mcp_server.py"],
-      "cwd": "/path/to/Claude-code-codex",
-      "env": {}
-    }
-  }
-}
-```
-
-> **注意**: 请将 `/path/to/Claude-code-codex` 替换为项目的实际绝对路径
-
-### 4. 在AI工具中使用
-配置完成后，AI工具会自动加载所有38个MCP工具：
+### 🎉 开始使用
+安装完成后，重启Claude Code即可使用38个AI工具：
 
 - **规则提醒**: `ai_rule_reminder()` - 智能规则提醒
 - **模式切换**: `ai_switch_mode()` - 切换工作模式
@@ -85,12 +78,19 @@ pip install -r requirements.txt
 
 AI工具会自动使用相应的MCP工具来响应你的请求。
 
-## 🧪 验证安装
+## 🛠️ 管理命令
 ```bash
-# 验证MCP服务器可以启动
-python3 mcp_server.py
+# 查看安装状态
+ai-rule-mcp status
 
-# 如果看到"模拟MCP服务器正在运行..."说明安装成功
+# 手动启动服务器
+ai-rule-mcp start
+
+# 卸载MCP工具
+ai-rule-mcp uninstall
+
+# 重新安装
+ai-rule-mcp install
 ```
 
 ## 📁 数据存储

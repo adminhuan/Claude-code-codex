@@ -17,33 +17,48 @@
 
 ## 🚀 快速开始
 
-### 安装
+### 1. 克隆项目
+```bash
+git clone https://github.com/adminhuan/Claude-code-codex.git
+cd Claude-code-codex
+```
+
+### 2. 安装依赖
 ```bash
 pip install -r requirements.txt
-pip install -e .
 ```
 
-### 基本使用
-```python
-from ai_duet.mcp.tools import ai_rule_reminder, ai_check_compliance
+### 3. 配置Claude Code MCP
+在Claude Code中配置MCP服务器：
 
-# 获取规则提醒
-reminder = await ai_rule_reminder("我要实现用户登录API")
+1. 打开Claude Code设置
+2. 找到MCP服务器配置选项
+3. 添加以下配置（将路径替换为实际路径）：
 
-# 检查代码合规性
-result = await ai_check_compliance(your_code)
+```json
+{
+  "mcpServers": {
+    "ai-rule-mcp": {
+      "command": "python3",
+      "args": ["mcp_server.py"],
+      "cwd": "/path/to/Claude-code-codex",
+      "env": {}
+    }
+  }
+}
 ```
 
-### 开启协作功能（可选）
-```python
-from ai_duet.mcp.tools import ai_enable_collaboration, ai_send_message
+> **注意**: 请将 `/path/to/Claude-code-codex` 替换为项目的实际绝对路径
 
-# 启用协作
-await ai_enable_collaboration(True)
+### 4. 在Claude Code中使用
+配置完成后，Claude Code会自动加载所有38个MCP工具：
 
-# 发送消息给协作伙伴
-await ai_send_message("开始实现认证功能", "claude_code")
-```
+- **规则提醒**: `ai_rule_reminder()` - 智能规则提醒
+- **模式切换**: `ai_switch_mode()` - 切换工作模式
+- **计划管理**: `ai_create_plan()` - 创建开发计划
+- **代码审查**: `ai_create_pr()` - 创建PR审查
+- **功能请求**: `ai_submit_feature_request()` - 提交改进建议
+- 还有33个其他工具...
 
 ## 🛠️ 可用工具
 
@@ -58,13 +73,26 @@ await ai_send_message("开始实现认证功能", "claude_code")
 | `ai_read_messages()` | 读取协作消息 | 可选功能 |
 | `ai_collaboration_status()` | 查看协作状态 | 可选功能 |
 
-## 📖 使用示例
+## 📖 使用方式
 
-查看 `example_usage.py` 获取详细的使用示例。
+配置完成后，在Claude Code中你可以：
 
-运行测试：
+1. **直接请求规则提醒**: "请提醒我关于Python编码规范"
+2. **切换工作模式**: "切换到Plan模式"，"切换到PR模式"
+3. **创建开发计划**: "创建一个用户认证功能的开发计划"
+4. **管理代码审查**: "创建一个PR来审查这个功能"
+5. **提交功能请求**: "我建议增加代码格式化规则"
+
+Claude Code会自动使用相应的MCP工具来响应你的请求。
+
+## 🧪 测试工具
 ```bash
+# 测试MCP工具功能
 python test_ai_rules.py
+
+# 查看使用示例
+python example_usage.py
+python example_mode_usage.py
 ```
 
 ## 📁 规则配置

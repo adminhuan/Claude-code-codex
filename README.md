@@ -85,28 +85,31 @@ pip install -r requirements.txt
 
 Claude Code会自动使用相应的MCP工具来响应你的请求。
 
-## 🧪 测试工具
+## 🧪 验证安装
 ```bash
-# 测试MCP工具功能
-python test_ai_rules.py
+# 验证MCP服务器可以启动
+python3 mcp_server.py
 
-# 查看使用示例
-python example_usage.py
-python example_mode_usage.py
+# 如果看到"模拟MCP服务器正在运行..."说明安装成功
 ```
 
-## 📁 规则配置
+## 📁 数据存储
 
-工具会在项目根目录创建 `.ai_rules/` 目录：
+工具会在工作目录创建 `.ai_rules/` 目录：
 - `config.yaml` - 规则配置文件
+- `mode_config.json` - 模式配置
+- `plans.json` - 开发计划数据
+- `pull_requests.json` - PR数据
+- `feature_requests/` - 功能请求数据
 - `collaboration/` - 协作消息存储（如果启用）
 
-## 🎯 设计理念
+## 🎯 设计特点
 
-- **主要功能**：帮助AI遵守编码规范和项目规则
-- **可选协作**：用户可以选择是否启用AI间的协作通信
-- **简单可靠**：基于文件的轻量级实现
-- **高度可定制**：支持项目特定的自定义规则
+- **🎯 主功能突出** - 规则遵守提醒是核心功能
+- **🔄 模式化工作** - Normal/Plan/PR/FR四种专门模式
+- **📁 文件化存储** - 轻量级实现，无需数据库
+- **🔧 高度可定制** - 支持项目特定的自定义规则
+- **🤖 智能化** - AI主动发现问题并提出改进建议
 
 ## 📄 许可证
 

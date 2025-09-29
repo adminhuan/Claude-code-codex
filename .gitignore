@@ -140,6 +140,7 @@ ai_duet_outputs/
 .idea/
 *.swp
 *.swo
+.claude/
 
 # OS
 .DS_Store

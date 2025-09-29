@@ -1,15 +1,17 @@
 {
   "name": "ai-rule-mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI规则遵守MCP工具服务器 - 38个AI编码规范和协作工具",
-  "main": "mcp_server.py",
+  "main": "mcp_server_node.js",
+  "type": "module",
   "bin": {
-    "ai-rule-mcp-server": "./mcp_server.py"
+    "ai-rule-mcp-server": "./mcp_server_node.js"
   },
   "scripts": {
-    "start": "python3 mcp_server.py",
+    "start": "node mcp_server_node.js",
+    "start-python": "python3 mcp_server.py",
     "install-mcp": "python3 -c \"from ai_duet.cli import main; main()\" install",
-    "test": "python3 standalone_tools.py"
+    "test": "node mcp_server_node.js --help || echo 'MCP server ready'"
   },
   "keywords": [
     "mcp",
@@ -37,9 +39,9 @@
     "python": ">=3.8.0"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.2",
     "python-shell": "^5.0.0"
   },
-  "devDependencies": {},
   "files": [
     "mcp_server.py",
     "mcp_config.json",

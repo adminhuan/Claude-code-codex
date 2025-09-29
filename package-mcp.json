@@ -1,0 +1,40 @@
+{
+  "name": "ai-rule-mcp-server",
+  "version": "0.2.0",
+  "description": "AI规则遵守MCP工具服务器 - 38个AI编码规范和协作工具",
+  "main": "mcp_server_node.js",
+  "type": "module",
+  "bin": {
+    "ai-rule-mcp-server": "./mcp_server_node.js"
+  },
+  "scripts": {
+    "start": "node mcp_server_node.js",
+    "test": "node mcp_server_node.js --help"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "coding-standards",
+    "code-quality",
+    "claude-code",
+    "ai-tools",
+    "development-tools",
+    "model-context-protocol"
+  ],
+  "author": "AI Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adminhuan/Claude-code-codex.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "mcp_server_node.js",
+    "README.md"
+  ]
+}

@@ -3,6 +3,31 @@
 MCP服务器主程序 - 提供38个AI规则遵守工具函数
 为所有支持MCP协议的AI工具提供智能规则提醒、模式管理、协作功能
 """
+
+# 自动安装依赖
+import subprocess
+import sys
+import os
+from pathlib import Path
+
+def install_dependencies():
+    """自动安装Python依赖"""
+    requirements_file = Path(__file__).parent / "requirements.txt"
+    if requirements_file.exists():
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(requirements_file)])
+            print("✅ Python依赖安装完成")
+        except subprocess.CalledProcessError:
+            print("⚠️ 依赖安装失败，请手动运行: pip install -r requirements.txt")
+
+# 检查并安装依赖
+try:
+    import yaml
+except ImportError:
+    print("📦 正在安装缺失的依赖...")
+    install_dependencies()
+    import yaml
+
 import asyncio
 import json
 from typing import Dict, Any, List

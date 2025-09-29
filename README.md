@@ -19,13 +19,22 @@
 
 ### ⚡ 一键安装 (推荐)
 ```bash
-# 方法1: 直接从PyPI安装
+# 🎯 官方安装方式 (申请中)
+claude mcp add ai-rule-mcp
+
+# 🔧 临时安装方式
+# 方法1: Python包安装
 pip install ai-rule-mcp-server
 ai-rule-mcp install
 
-# 方法2: 一键安装脚本
+# 方法2: 一键脚本
 curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/install.sh | bash
+
+# 方法3: npm包安装
+npx ai-rule-mcp-server@latest
 ```
+
+> **📋 注意**: 我们正在申请加入Anthropic官方MCP目录，届时可以直接使用 `claude mcp add ai-rule-mcp` 安装
 
 ### 🔧 手动安装
 ```bash

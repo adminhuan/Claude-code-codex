@@ -3,17 +3,20 @@ AI Duet 安装脚本
 """
 from setuptools import setup, find_packages
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+try:
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+except FileNotFoundError:
+    long_description = "AI规则遵守MCP工具"
 
 with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 
 setup(
-    name="ai-duet",
+    name="ai-rule-mcp",
     version="0.1.0",
     author="Claude Code & User",
-    description="Claude Code 与 OpenAI 协作系统",
+    description="AI规则遵守MCP工具",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
@@ -30,11 +33,8 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=requirements,
-    entry_points={
-        "console_scripts": [
-            "ai-duet=ai_duet.__main__:main",
-        ],
-    },
+    # 注意：MCP工具不需要console_scripts入口点
+    # 将通过MCP协议直接调用函数
     extras_require={
         "dev": [
             "pytest>=7.0.0",

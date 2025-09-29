@@ -1,0 +1,62 @@
+[
+  {
+    "id": "FR001_1759115752",
+    "title": "增强SQL注入检测规则",
+    "description": "当前规则只检测简单的字符串拼接，建议添加对动态查询构建、存储过程调用等场景的检测",
+    "submitter": "claude_code",
+    "priority": "high",
+    "category": "rule_improvement",
+    "status": "proposed",
+    "created_at": "2025-09-29T11:15:52.645363",
+    "updated_at": "2025-09-29T11:15:52.647219",
+    "votes": {
+      "codex": "approve"
+    },
+    "implementation_notes": "",
+    "related_rules": []
+  },
+  {
+    "id": "FR002_1759115752",
+    "title": "规则提醒支持严重程度分级",
+    "description": "目前所有规则提醒都是同等重要，建议按严重程度分级显示：🔴严重 🟡警告 🔵建议",
+    "submitter": "codex",
+    "priority": "medium",
+    "category": "new_feature",
+    "status": "proposed",
+    "created_at": "2025-09-29T11:15:52.645952",
+    "updated_at": "2025-09-29T11:15:52.648071",
+    "votes": {
+      "claude_code": "approve"
+    },
+    "implementation_notes": "",
+    "related_rules": []
+  },
+  {
+    "id": "FR003_1759115752",
+    "title": "协作消息支持代码片段高亮",
+    "description": "在AI协作过程中经常需要分享代码片段，建议消息支持Markdown格式和代码高亮",
+    "submitter": "claude_code",
+    "priority": "low",
+    "category": "collaboration",
+    "status": "proposed",
+    "created_at": "2025-09-29T11:15:52.649007",
+    "updated_at": "2025-09-29T11:15:52.649018",
+    "votes": {},
+    "implementation_notes": "",
+    "related_rules": []
+  },
+  {
+    "id": "FR004_1759115752",
+    "title": "规则配置支持团队模板",
+    "description": "不同团队有不同的编码规范，建议支持团队规则模板，新项目可以一键导入",
+    "submitter": "codex",
+    "priority": "medium",
+    "category": "new_feature",
+    "status": "proposed",
+    "created_at": "2025-09-29T11:15:52.649625",
+    "updated_at": "2025-09-29T11:15:52.649634",
+    "votes": {},
+    "implementation_notes": "",
+    "related_rules": []
+  }
+]

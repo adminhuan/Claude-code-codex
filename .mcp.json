@@ -1,9 +1,9 @@
 {
   "servers": {
     "ai-rule-mcp": {
-      "command": "node",
-      "args": ["mcp_server_node.js"],
-      "description": "AI规则遵守MCP工具 - 标准Node.js MCP服务器"
+      "command": "ai-rule-mcp-server",
+      "args": [],
+      "description": "AI规则遵守MCP工具 - 全局安装版本"
     }
   }
 }

@@ -1,6 +1,4 @@
-# AI规则遵守MCP工具依赖
-pyyaml>=6.0
-aiofiles>=23.0.0
-
-# MCP框架依赖
-mcp>=1.0.0
+# AI规则遵守MCP工具运行所需的Python依赖包
+pyyaml>=6.0          # YAML配置文件处理
+aiofiles>=23.0.0     # 异步文件操作
+mcp>=1.0.0           # Model Context Protocol框架

@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "ai-rule-mcp": {
+      "command": "npx",
+      "args": ["ai-rule-mcp-server@latest"],
+      "description": "AI规则遵守MCP工具 - 38个智能规则提醒、多模式工作流、AI协作功能"
+    }
+  }
+}

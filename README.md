@@ -1,6 +1,6 @@
 # AI规则遵守MCP工具
 
-一个专为Claude Code和Codex设计的MCP工具集，主要功能是提醒AI遵守编码规范和项目规则，可选的AI协作通信功能。
+专为Claude Code设计的MCP工具集，提供38个工具函数：智能规则提醒、多模式工作流(Plan/PR/FR)、可选AI协作功能。
 
 ## 🎯 主要功能
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 MCP服务器主程序 - 提供38个AI规则遵守工具函数
-为Claude Code提供智能规则提醒、模式管理、协作功能的MCP服务器
+为所有支持MCP协议的AI工具提供智能规则提醒、模式管理、协作功能
 """
 import asyncio
 import json

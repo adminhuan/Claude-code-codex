@@ -1,6 +1,6 @@
 # AI规则遵守MCP工具
 
-专为Claude Code设计的MCP工具集，提供38个工具函数：智能规则提醒、多模式工作流(Plan/PR/FR)、可选AI协作功能。
+为所有支持MCP协议的AI工具设计的规则遵守工具集，提供38个工具函数：智能规则提醒、多模式工作流(Plan/PR/FR)、可选AI协作功能。
 
 ## 🎯 主要功能
 
@@ -28,10 +28,10 @@ cd Claude-code-codex
 pip install -r requirements.txt
 ```
 
-### 3. 配置Claude Code MCP
-在Claude Code中配置MCP服务器：
+### 3. 配置MCP客户端
+在支持MCP的AI工具中配置服务器：
 
-1. 打开Claude Code设置
+1. 打开AI工具的MCP设置
 2. 找到MCP服务器配置选项
 3. 添加以下配置（将路径替换为实际路径）：
 
@@ -50,8 +50,8 @@ pip install -r requirements.txt
 
 > **注意**: 请将 `/path/to/Claude-code-codex` 替换为项目的实际绝对路径
 
-### 4. 在Claude Code中使用
-配置完成后，Claude Code会自动加载所有38个MCP工具：
+### 4. 在AI工具中使用
+配置完成后，AI工具会自动加载所有38个MCP工具：
 
 - **规则提醒**: `ai_rule_reminder()` - 智能规则提醒
 - **模式切换**: `ai_switch_mode()` - 切换工作模式
@@ -75,7 +75,7 @@ pip install -r requirements.txt
 
 ## 📖 使用方式
 
-配置完成后，在Claude Code中你可以：
+配置完成后，在支持MCP的AI工具中你可以：
 
 1. **直接请求规则提醒**: "请提醒我关于Python编码规范"
 2. **切换工作模式**: "切换到Plan模式"，"切换到PR模式"
@@ -83,7 +83,7 @@ pip install -r requirements.txt
 4. **管理代码审查**: "创建一个PR来审查这个功能"
 5. **提交功能请求**: "我建议增加代码格式化规则"
 
-Claude Code会自动使用相应的MCP工具来响应你的请求。
+AI工具会自动使用相应的MCP工具来响应你的请求。
 
 ## 🧪 验证安装
 ```bash

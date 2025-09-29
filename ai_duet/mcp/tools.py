@@ -1,6 +1,6 @@
 """
-AI规则遵守MCP工具接口
-为Claude Code和Codex提供规则检查和提醒功能
+MCP工具函数接口 - 38个AI规则遵守和协作工具
+为所有支持MCP协议的AI工具提供智能规则提醒、模式管理、协作功能
 """
 import asyncio
 from typing import Dict, List, Any

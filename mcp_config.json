@@ -4,7 +4,8 @@
       "command": "python3",
       "args": ["mcp_server.py"],
       "cwd": ".",
-      "env": {}
+      "env": {},
+      "description": "AI规则遵守MCP工具集 - 智能规则提醒和协作功能"
     }
   }
 }

@@ -1,0 +1,99 @@
+{
+  "schema": "https://registry.modelcontextprotocol.io/schema/server.json",
+  "name": "ai-rule-mcp-server",
+  "description": "AI规则遵守MCP工具 - 为所有支持MCP协议的AI工具提供38个智能规则提醒、多模式工作流、可选AI协作功能",
+  "version": "0.1.0",
+  "homepage": "https://github.com/adminhuan/Claude-code-codex",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adminhuan/Claude-code-codex.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "AI Community",
+    "email": "adminhuan@example.com"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "coding-standards",
+    "code-quality",
+    "claude-code",
+    "ai-tools",
+    "development-tools",
+    "python",
+    "model-context-protocol",
+    "rule-compliance"
+  ],
+  "categories": [
+    "productivity",
+    "development",
+    "code-quality"
+  ],
+  "packages": [
+    {
+      "type": "npm",
+      "name": "ai-rule-mcp-server",
+      "registry": "https://registry.npmjs.org"
+    },
+    {
+      "type": "pypi",
+      "name": "ai-rule-mcp-server",
+      "registry": "https://pypi.org"
+    },
+    {
+      "type": "github-release",
+      "owner": "adminhuan",
+      "repo": "Claude-code-codex"
+    }
+  ],
+  "tools": [
+    {
+      "name": "ai_rule_reminder",
+      "description": "智能规则提醒 - 根据上下文自动提醒相关编码规范"
+    },
+    {
+      "name": "ai_switch_mode",
+      "description": "模式切换 - 切换Normal/Plan/PR/FR工作模式"
+    },
+    {
+      "name": "ai_create_plan",
+      "description": "创建开发计划 - 生成结构化的项目开发计划"
+    },
+    {
+      "name": "ai_create_pr",
+      "description": "创建PR审查 - 管理代码审查流程"
+    },
+    {
+      "name": "ai_submit_feature_request",
+      "description": "提交功能请求 - AI驱动的功能改进建议"
+    },
+    {
+      "name": "ai_check_compliance",
+      "description": "代码合规检查 - 检测代码问题和规范违反"
+    },
+    {
+      "name": "ai_get_rules",
+      "description": "获取规则清单 - 查看可用的编码规范"
+    },
+    {
+      "name": "ai_add_custom_rule",
+      "description": "添加自定义规则 - 项目特定的规则配置"
+    }
+  ],
+  "capabilities": {
+    "resources": true,
+    "tools": true,
+    "prompts": false
+  },
+  "runtime": {
+    "python": {
+      "version": ">=3.8.0"
+    }
+  },
+  "installation": {
+    "pip": "pip install ai-rule-mcp-server && ai-rule-mcp install",
+    "npm": "npx ai-rule-mcp-server@latest",
+    "manual": "git clone https://github.com/adminhuan/Claude-code-codex.git && cd Claude-code-codex && pip install -e . && ai-rule-mcp install"
+  }
+}

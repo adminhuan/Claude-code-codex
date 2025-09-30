@@ -1,6 +1,6 @@
-# AI规则遵守MCP工具
+# Smart Search MCP - 智能搜索MCP工具
 
-为所有支持MCP协议的AI工具设计的规则遵守工具集，提供64个工具函数：38个基础工具 + 7个监督指导工具 + 14个智能搜索工具 + 5个控制台调试工具，让Claude Code在专业指导下生成高质量规则书、开发计划、PR审查和功能请求，并快速检索技术资料和诊断前端问题。
+智能搜索MCP工具集，提供64个工具函数：14个智能搜索工具 + 5个控制台调试工具 + 38个编码规范工具 + 7个监督指导工具，让Claude Code快速检索技术资料、诊断前端问题，并在专业指导下生成高质量开发文档。
 
 ## 🎯 主要功能
 
@@ -54,37 +54,30 @@
 
 ### ⚡ 一键安装 (推荐)
 ```bash
-# 🎯 官方安装方式 (申请中)
-claude mcp add ai-rule-mcp
+# 🎯 NPM安装 (推荐)
+npx smart-search-mcp@latest
 
-# 🔧 临时安装方式
-# 方法1: Python包安装
-pip install ai-rule-mcp-server
-ai-rule-mcp install
+# 🔧 全局安装
+npm install -g smart-search-mcp
 
-# 方法2: 一键脚本
-curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/install.sh | bash
-
-# 方法3: npm包安装
-npx ai-rule-mcp-server@latest
-```
-
-> **📋 注意**: 我们正在申请加入Anthropic官方MCP目录，届时可以直接使用 `claude mcp add ai-rule-mcp` 安装
-
-### 🔧 手动安装
-```bash
-# 1. 克隆项目
+# 📦 或从GitHub安装
 git clone https://github.com/adminhuan/Claude-code-codex.git
 cd Claude-code-codex
+npm install
+npm start
+```
 
-# 2. 安装依赖
-pip install -r requirements.txt
-
-# 3. 安装到系统
-pip install -e .
-
-# 4. 配置MCP
-ai-rule-mcp install
+### 🔧 配置Claude Code
+在Claude Code的MCP配置中添加：
+```json
+{
+  "mcpServers": {
+    "smart-search-mcp": {
+      "command": "npx",
+      "args": ["smart-search-mcp@latest"]
+    }
+  }
+}
 ```
 
 ### 🎉 开始使用
@@ -197,17 +190,14 @@ AI工具会自动使用相应的MCP工具来响应你的请求，并提供搜索
 
 ## 🛠️ 管理命令
 ```bash
-# 查看安装状态
-ai-rule-mcp status
+# 查看版本
+npm list -g smart-search-mcp
 
-# 手动启动服务器
-ai-rule-mcp start
+# 更新到最新版本
+npm update -g smart-search-mcp
 
-# 卸载MCP工具
-ai-rule-mcp uninstall
-
-# 重新安装
-ai-rule-mcp install
+# 卸载
+npm uninstall -g smart-search-mcp
 ```
 
 ## 📁 数据存储

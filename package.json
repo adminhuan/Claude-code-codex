@@ -1,11 +1,11 @@
 {
-  "name": "ai-rule-mcp-server",
-  "version": "0.6.0",
-  "description": "AI规则遵守MCP工具服务器 - 64个AI工具：38个编码规范 + 7个监督指导 + 14个智能搜索 + 5个控制台调试工具",
+  "name": "smart-search-mcp",
+  "version": "0.6.1",
+  "description": "智能搜索MCP工具 - 14个搜索平台 + 5个控制台调试工具 + 38个编码规范 + 7个监督指导工具",
   "main": "mcp_server_node.js",
   "type": "module",
   "bin": {
-    "ai-rule-mcp-server": "./mcp_server_node.js"
+    "smart-search-mcp": "./mcp_server_node.js"
   },
   "scripts": {
     "start": "node mcp_server_node.js",

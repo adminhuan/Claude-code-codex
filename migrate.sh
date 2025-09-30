@@ -35,7 +35,50 @@ OLD_CONFIG_FOUND=false
 if [ -f "$CLAUDE_CONFIG" ]; then
     echo "✅ 发现配置文件: $CLAUDE_CONFIG"
 
-    if grep -q "ai-rule-mcp-server" "$CLAUDE_CONFIG"; then
+    # 使用Python/Node.js精确检测是否存在旧配置（而不是用grep）
+    if command -v python3 &> /dev/null; then
+        HAS_OLD_CONFIG=$(python3 -c "
+import json
+import sys
+with open('$CLAUDE_CONFIG', 'r') as f:
+    config = json.load(f)
+
+found = False
+if 'mcpServers' in config and 'ai-rule-mcp-server' in config['mcpServers']:
+    found = True
+if 'projects' in config:
+    for project_config in config['projects'].values():
+        if 'mcpServers' in project_config and 'ai-rule-mcp-server' in project_config['mcpServers']:
+            found = True
+            break
+
+print('yes' if found else 'no')
+" 2>/dev/null)
+    elif command -v node &> /dev/null; then
+        HAS_OLD_CONFIG=$(node -e "
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('$CLAUDE_CONFIG', 'utf8'));
+
+let found = false;
+if (config.mcpServers && config.mcpServers['ai-rule-mcp-server']) {
+    found = true;
+}
+if (config.projects) {
+    for (const projectConfig of Object.values(config.projects)) {
+        if (projectConfig.mcpServers && projectConfig.mcpServers['ai-rule-mcp-server']) {
+            found = true;
+            break;
+        }
+    }
+}
+
+console.log(found ? 'yes' : 'no');
+" 2>/dev/null)
+    else
+        HAS_OLD_CONFIG="unknown"
+    fi
+
+    if [ "$HAS_OLD_CONFIG" = "yes" ]; then
         echo "⚠️  发现旧配置 ai-rule-mcp-server"
         OLD_CONFIG_FOUND=true
 
@@ -114,8 +157,11 @@ if (deletedCount > 0) {
             echo "删除 'ai-rule-mcp-server' 配置项"
             read -p "删除完成后，按回车键继续..."
         fi
-    else
+    elif [ "$HAS_OLD_CONFIG" = "no" ]; then
         echo "✅ 配置文件中未发现旧配置"
+    else
+        echo "⚠️  无法检测配置（需要 Python 或 Node.js）"
+        echo "请手动检查: $CLAUDE_CONFIG"
     fi
 else
     echo "ℹ️  配置文件不存在"

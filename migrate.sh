@@ -73,9 +73,25 @@ echo ""
 # 自动尝试使用Claude MCP命令
 if command -v claude &> /dev/null; then
     echo "✅ 检测到 claude 命令，使用 Claude MCP 安装"
-    claude mcp add smart-search-mcp npx smart-search-mcp
+
+    # 检查是否已经存在
+    if claude mcp list 2>/dev/null | grep -q "smart-search-mcp"; then
+        echo "ℹ️  检测到 smart-search-mcp 已存在"
+        read -p "是否重新配置？(y/n): " reconfig
+        if [ "$reconfig" = "y" ] || [ "$reconfig" = "Y" ]; then
+            echo "🔄 删除旧配置..."
+            claude mcp remove smart-search-mcp 2>/dev/null || true
+            echo "📦 添加新配置..."
+            claude mcp add smart-search-mcp npx smart-search-mcp
+        else
+            echo "⏭️  跳过配置"
+        fi
+    else
+        claude mcp add smart-search-mcp npx smart-search-mcp
+    fi
+
     echo ""
-    echo "✅ MCP服务器已添加！"
+    echo "✅ MCP服务器配置完成！"
 else
     echo "ℹ️  未找到 claude 命令，使用全局安装"
     npm install -g smart-search-mcp

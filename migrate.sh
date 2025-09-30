@@ -39,23 +39,37 @@ if [ -f "$CLAUDE_CONFIG" ]; then
         echo "⚠️  发现旧配置 ai-rule-mcp-server"
         OLD_CONFIG_FOUND=true
 
-        echo ""
-        read -p "是否自动删除旧配置？(y/n): " remove_config
-        if [ "$remove_config" = "y" ] || [ "$remove_config" = "Y" ]; then
-            # 备份配置文件
-            cp "$CLAUDE_CONFIG" "$CLAUDE_CONFIG.backup"
-            echo "✅ 已备份配置文件到: $CLAUDE_CONFIG.backup"
+        # 备份配置文件
+        cp "$CLAUDE_CONFIG" "$CLAUDE_CONFIG.backup"
+        echo "✅ 已备份配置文件到: $CLAUDE_CONFIG.backup"
 
-            # 使用sed删除旧配置（简单方式，可能不完美）
-            echo "⚠️  请手动编辑配置文件删除旧配置："
-            echo "  $CLAUDE_CONFIG"
-            echo ""
-            read -p "删除完成后，按回车键继续..."
+        echo "🗑️  自动删除旧配置..."
+        # 使用Python/Node.js删除JSON中的旧配置
+        if command -v python3 &> /dev/null; then
+            python3 -c "
+import json
+with open('$CLAUDE_CONFIG', 'r') as f:
+    config = json.load(f)
+if 'mcpServers' in config and 'ai-rule-mcp-server' in config['mcpServers']:
+    del config['mcpServers']['ai-rule-mcp-server']
+    with open('$CLAUDE_CONFIG', 'w') as f:
+        json.dump(config, f, indent=2)
+    print('✅ 已删除旧配置')
+"
+        elif command -v node &> /dev/null; then
+            node -e "
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('$CLAUDE_CONFIG', 'utf8'));
+if (config.mcpServers && config.mcpServers['ai-rule-mcp-server']) {
+    delete config.mcpServers['ai-rule-mcp-server'];
+    fs.writeFileSync('$CLAUDE_CONFIG', JSON.stringify(config, null, 2));
+    console.log('✅ 已删除旧配置');
+}
+"
         else
-            echo ""
-            echo "⚠️  请手动编辑配置文件删除旧配置："
-            echo "  $CLAUDE_CONFIG"
-            echo ""
+            echo "⚠️  需要 Python 或 Node.js 来自动删除配置"
+            echo "请手动编辑: $CLAUDE_CONFIG"
+            echo "删除 'ai-rule-mcp-server' 配置项"
             read -p "删除完成后，按回车键继续..."
         fi
     else

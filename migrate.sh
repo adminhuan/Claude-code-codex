@@ -44,26 +44,68 @@ if [ -f "$CLAUDE_CONFIG" ]; then
         echo "✅ 已备份配置文件到: $CLAUDE_CONFIG.backup"
 
         echo "🗑️  自动删除旧配置..."
-        # 使用Python/Node.js删除JSON中的旧配置
+        # 使用Python/Node.js删除JSON中的旧配置（包括所有项目）
         if command -v python3 &> /dev/null; then
             python3 -c "
 import json
 with open('$CLAUDE_CONFIG', 'r') as f:
     config = json.load(f)
+
+deleted_count = 0
+
+# 删除全局配置
 if 'mcpServers' in config and 'ai-rule-mcp-server' in config['mcpServers']:
     del config['mcpServers']['ai-rule-mcp-server']
-    with open('$CLAUDE_CONFIG', 'w') as f:
-        json.dump(config, f, indent=2)
-    print('✅ 已删除旧配置')
+    deleted_count += 1
+    print('✅ 已删除全局配置')
+
+# 删除所有项目中的配置
+if 'projects' in config:
+    for project_path, project_config in config['projects'].items():
+        if 'mcpServers' in project_config and 'ai-rule-mcp-server' in project_config['mcpServers']:
+            del project_config['mcpServers']['ai-rule-mcp-server']
+            deleted_count += 1
+            print(f'✅ 已删除项目配置: {project_path}')
+
+with open('$CLAUDE_CONFIG', 'w') as f:
+    json.dump(config, f, indent=2)
+
+if deleted_count > 0:
+    print(f'✅ 共删除 {deleted_count} 个旧配置')
+else:
+    print('ℹ️  未找到需要删除的配置')
 "
         elif command -v node &> /dev/null; then
             node -e "
 const fs = require('fs');
 const config = JSON.parse(fs.readFileSync('$CLAUDE_CONFIG', 'utf8'));
+
+let deletedCount = 0;
+
+// 删除全局配置
 if (config.mcpServers && config.mcpServers['ai-rule-mcp-server']) {
     delete config.mcpServers['ai-rule-mcp-server'];
-    fs.writeFileSync('$CLAUDE_CONFIG', JSON.stringify(config, null, 2));
-    console.log('✅ 已删除旧配置');
+    deletedCount++;
+    console.log('✅ 已删除全局配置');
+}
+
+// 删除所有项目中的配置
+if (config.projects) {
+    for (const [projectPath, projectConfig] of Object.entries(config.projects)) {
+        if (projectConfig.mcpServers && projectConfig.mcpServers['ai-rule-mcp-server']) {
+            delete projectConfig.mcpServers['ai-rule-mcp-server'];
+            deletedCount++;
+            console.log('✅ 已删除项目配置: ' + projectPath);
+        }
+    }
+}
+
+fs.writeFileSync('$CLAUDE_CONFIG', JSON.stringify(config, null, 2));
+
+if (deletedCount > 0) {
+    console.log('✅ 共删除 ' + deletedCount + ' 个旧配置');
+} else {
+    console.log('ℹ️  未找到需要删除的配置');
 }
 "
         else

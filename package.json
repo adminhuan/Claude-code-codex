@@ -1,6 +1,6 @@
 {
   "name": "smart-search-mcp",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "智能搜索MCP工具 - 14个搜索平台 + 5个控制台调试工具 + 38个编码规范 + 7个监督指导工具",
   "main": "mcp_server_node.js",
   "type": "module",
@@ -26,12 +26,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/adminhuan/Claude-code-codex.git"
+    "url": "https://github.com/adminhuan/smart-search-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/adminhuan/Claude-code-codex/issues"
+    "url": "https://github.com/adminhuan/smart-search-mcp/issues"
   },
-  "homepage": "https://github.com/adminhuan/Claude-code-codex#readme",
+  "homepage": "https://github.com/adminhuan/smart-search-mcp#readme",
   "engines": {
     "node": ">=18.0.0"
   },

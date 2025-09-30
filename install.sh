@@ -38,11 +38,11 @@ case $choice in
         ;;
     2)
         echo "📥 从GitHub克隆..."
-        if [ -d "Claude-code-codex" ]; then
-            rm -rf Claude-code-codex
+        if [ -d "smart-search-mcp" ]; then
+            rm -rf smart-search-mcp
         fi
-        git clone https://github.com/adminhuan/Claude-code-codex.git
-        cd Claude-code-codex
+        git clone https://github.com/adminhuan/smart-search-mcp.git
+        cd smart-search-mcp
         npm install
         npm link
         echo "✅ 安装完成"
@@ -77,4 +77,4 @@ echo "• npm list -g smart-search-mcp  - 查看版本"
 echo "• npm update -g smart-search-mcp - 更新"
 echo "• npm uninstall -g smart-search-mcp - 卸载"
 echo ""
-echo "📚 更多信息: https://github.com/adminhuan/Claude-code-codex"
+echo "📚 更多信息: https://github.com/adminhuan/smart-search-mcp"

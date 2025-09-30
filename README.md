@@ -58,7 +58,7 @@
 
 ```bash
 # 🔄 一键迁移（自动卸载旧版本并安装新版本）
-curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/migrate.sh | bash
+curl -sSL https://raw.githubusercontent.com/adminhuan/smart-search-mcp/main/migrate.sh | bash
 
 # 或手动迁移：
 # 1. 卸载旧版本
@@ -76,7 +76,7 @@ npm uninstall -g ai-rule-mcp-server
 claude mcp add smart-search-mcp npx smart-search-mcp
 
 # 📜 或一键脚本安装
-curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/adminhuan/smart-search-mcp/main/install.sh | bash
 
 # 📦 或NPM直接运行
 npx smart-search-mcp@latest
@@ -85,8 +85,8 @@ npx smart-search-mcp@latest
 npm install -g smart-search-mcp
 
 # 📥 或从GitHub源码安装
-git clone https://github.com/adminhuan/Claude-code-codex.git
-cd Claude-code-codex
+git clone https://github.com/adminhuan/smart-search-mcp.git
+cd smart-search-mcp
 npm install
 npm start
 ```

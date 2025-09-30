@@ -2,6 +2,24 @@
 
 所有重要的项目更改都将记录在此文件中。
 
+## [0.6.6] - 2025-09-30
+
+### 🔄 重大变更
+- **仓库更名**: GitHub仓库从 `Claude-code-codex` 更名为 `smart-search-mcp`
+- **统一品牌**: 与NPM包名保持一致
+
+### 📚 文档更新
+- 更新所有文档中的GitHub链接
+- 更新package.json仓库地址
+- 更新所有shell脚本中的链接
+- 修正README、CHANGELOG中的仓库引用
+
+### 🔗 新链接
+- GitHub: https://github.com/adminhuan/smart-search-mcp
+- NPM: https://www.npmjs.com/package/smart-search-mcp
+
+---
+
 ## [0.6.5] - 2025-09-30
 
 ### 🐛 修复
@@ -297,6 +315,6 @@
 
 ## 链接
 
-- [GitHub仓库](https://github.com/adminhuan/Claude-code-codex)
+- [GitHub仓库](https://github.com/adminhuan/smart-search-mcp)
 - [NPM包](https://www.npmjs.com/package/smart-search-mcp)
-- [问题反馈](https://github.com/adminhuan/Claude-code-codex/issues)
+- [问题反馈](https://github.com/adminhuan/smart-search-mcp/issues)

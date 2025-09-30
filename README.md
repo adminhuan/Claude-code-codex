@@ -54,13 +54,16 @@
 
 ### ⚡ 一键安装 (推荐)
 ```bash
-# 🎯 NPM安装 (推荐)
+# 🎯 一键脚本安装 (最简单)
+curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/install.sh | bash
+
+# 📦 或NPM安装
 npx smart-search-mcp@latest
 
-# 🔧 全局安装
+# 🔧 或全局安装
 npm install -g smart-search-mcp
 
-# 📦 或从GitHub安装
+# 📥 或从GitHub安装
 git clone https://github.com/adminhuan/Claude-code-codex.git
 cd Claude-code-codex
 npm install

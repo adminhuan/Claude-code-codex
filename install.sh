@@ -1,39 +1,40 @@
 #!/bin/bash
-# AI规则遵守MCP工具一键安装脚本
+# Smart Search MCP 一键安装脚本
 
 set -e
 
-echo "🚀 AI规则遵守MCP工具一键安装脚本"
-echo "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "=" "="
+echo "🚀 Smart Search MCP 一键安装脚本"
+echo "=================================================================="
 
-# 检查Python
-if ! command -v python3 &> /dev/null; then
-    echo "❌ Python3未安装，请先安装Python3"
+# 检查Node.js
+if ! command -v node &> /dev/null; then
+    echo "❌ Node.js未安装，请先安装Node.js (>=18.0.0)"
+    echo "📥 访问 https://nodejs.org 下载安装"
     exit 1
 fi
 
-echo "✅ Python3检查通过"
+echo "✅ Node.js检查通过 ($(node -v))"
 
-# 检查pip
-if ! command -v pip &> /dev/null && ! command -v pip3 &> /dev/null; then
-    echo "❌ pip未安装，请先安装pip"
+# 检查npm
+if ! command -v npm &> /dev/null; then
+    echo "❌ npm未安装"
     exit 1
 fi
 
-echo "✅ pip检查通过"
+echo "✅ npm检查通过 ($(npm -v))"
 
 # 安装方式选择
 echo ""
 echo "请选择安装方式:"
-echo "1. 从PyPI安装 (推荐)"
+echo "1. 全局安装 (推荐)"
 echo "2. 从GitHub源码安装"
-echo "3. 本地开发安装"
-read -p "请输入选择 (1-3): " choice
+read -p "请输入选择 (1-2): " choice
 
 case $choice in
     1)
-        echo "📦 从PyPI安装..."
-        pip install ai-rule-mcp-server
+        echo "📦 全局安装 smart-search-mcp..."
+        npm install -g smart-search-mcp
+        echo "✅ 安装完成"
         ;;
     2)
         echo "📥 从GitHub克隆..."
@@ -42,11 +43,9 @@ case $choice in
         fi
         git clone https://github.com/adminhuan/Claude-code-codex.git
         cd Claude-code-codex
-        pip install -e .
-        ;;
-    3)
-        echo "🔧 本地开发安装..."
-        pip install -e .
+        npm install
+        npm link
+        echo "✅ 安装完成"
         ;;
     *)
         echo "❌ 无效选择"
@@ -54,24 +53,28 @@ case $choice in
         ;;
 esac
 
-echo "✅ 包安装完成"
-
-# 运行配置
-echo ""
-echo "🔧 配置MCP服务器..."
-ai-rule-mcp install
-
 echo ""
 echo "🎉 安装完成!"
 echo ""
-echo "📝 使用说明:"
-echo "1. 重启Claude Code"
-echo "2. 试试说: '请提醒我Python编码规范'"
-echo "3. 或者说: '切换到Plan模式'"
+echo "📝 配置Claude Code:"
+echo "在 Claude Code 的 MCP 配置中添加:"
+echo '{'
+echo '  "mcpServers": {'
+echo '    "smart-search-mcp": {'
+echo '      "command": "npx",'
+echo '      "args": ["smart-search-mcp@latest"]'
+echo '    }'
+echo '  }'
+echo '}'
+echo ""
+echo "📚 使用说明:"
+echo "1. 重启 Claude Code"
+echo "2. 试试说: '搜索React Hooks最佳实践'"
+echo "3. 或者说: '搜索微信小程序一键登录'"
 echo ""
 echo "🛠️ 管理命令:"
-echo "• ai-rule-mcp status    - 查看状态"
-echo "• ai-rule-mcp start     - 启动服务器"
-echo "• ai-rule-mcp uninstall - 卸载"
+echo "• npm list -g smart-search-mcp  - 查看版本"
+echo "• npm update -g smart-search-mcp - 更新"
+echo "• npm uninstall -g smart-search-mcp - 卸载"
 echo ""
 echo "📚 更多信息: https://github.com/adminhuan/Claude-code-codex"

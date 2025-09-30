@@ -1,7 +1,7 @@
 {
   "name": "ai-rule-mcp-server",
-  "version": "0.5.0",
-  "description": "AI规则遵守MCP工具服务器 - 56个AI工具：38个编码规范 + 7个监督指导 + 6个智能搜索 + 5个控制台调试工具",
+  "version": "0.6.0",
+  "description": "AI规则遵守MCP工具服务器 - 64个AI工具：38个编码规范 + 7个监督指导 + 14个智能搜索 + 5个控制台调试工具",
   "main": "mcp_server_node.js",
   "type": "module",
   "bin": {

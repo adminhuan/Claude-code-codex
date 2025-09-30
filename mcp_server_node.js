@@ -10,7 +10,7 @@ import {
 const server = new Server(
   {
     name: 'ai-rule-mcp-server',
-    version: '0.5.0',
+    version: '0.6.0',
   },
   {
     capabilities: {
@@ -321,6 +321,103 @@ const AI_TOOLS = [
         environment: { type: 'string', description: '运行环境（如：Chrome、Firefox、Node.js等）' }
       },
       required: ['error_description']
+    }
+  },
+
+  // === 国内开发者平台搜索工具 ===
+  {
+    name: 'ai_search_wechat_docs',
+    description: '📱 微信开发者文档搜索 - 搜索微信小程序、公众号、开放平台文档',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        platform: { type: 'string', enum: ['miniprogram', 'officialaccount', 'open', 'payment', 'all'], description: '平台类型：miniprogram(小程序)、officialaccount(公众号)、open(开放平台)、payment(支付)、all(全部)', default: 'all' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_csdn',
+    description: '📝 CSDN搜索 - 搜索CSDN技术博客和问答',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        type: { type: 'string', enum: ['blog', 'ask', 'all'], description: '搜索类型：blog(博客)、ask(问答)、all(全部)', default: 'all' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_juejin',
+    description: '💎 掘金搜索 - 搜索掘金技术文章和专栏',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        sort: { type: 'string', enum: ['hot', 'time', 'likes'], description: '排序方式：hot(热门)、time(最新)、likes(点赞)', default: 'hot' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_segmentfault',
+    description: '🔧 SegmentFault搜索 - 搜索SegmentFault技术问答',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        tags: { type: 'string', description: '标签筛选（如：javascript,react）' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_cnblogs',
+    description: '📚 博客园搜索 - 搜索博客园技术博客',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_oschina',
+    description: '🌐 开源中国搜索 - 搜索开源中国技术资讯和问答',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        type: { type: 'string', enum: ['news', 'blog', 'ask', 'project', 'all'], description: '搜索类型', default: 'all' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_aliyun_docs',
+    description: '☁️ 阿里云文档搜索 - 搜索阿里云开发者文档',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        product: { type: 'string', description: '产品名称（如：ECS、OSS、RDS等，可选）' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_tencent_docs',
+    description: '☁️ 腾讯云文档搜索 - 搜索腾讯云开发者文档',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        product: { type: 'string', description: '产品名称（如：COS、CDN、CVM等，可选）' }
+      },
+      required: ['query']
     }
   }
 ];
@@ -1212,6 +1309,322 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      // === 国内开发者平台搜索工具处理 ===
+      case 'ai_search_wechat_docs': {
+        const { query, platform = 'all' } = args;
+
+        const platformUrls = {
+          miniprogram: `https://developers.weixin.qq.com/miniprogram/dev/framework/search.html?q=${encodeURIComponent(query)}`,
+          officialaccount: `https://developers.weixin.qq.com/doc/offiaccount/search.html?q=${encodeURIComponent(query)}`,
+          open: `https://developers.weixin.qq.com/doc/oplatform/search.html?q=${encodeURIComponent(query)}`,
+          payment: `https://pay.weixin.qq.com/wiki/doc/apiv3/search.html?q=${encodeURIComponent(query)}`,
+          all: `https://developers.weixin.qq.com/`
+        };
+
+        const platformNames = {
+          miniprogram: '小程序',
+          officialaccount: '公众号',
+          open: '开放平台',
+          payment: '微信支付',
+          all: '全平台'
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `📱 微信开发者文档搜索\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📂 平台类型: ${platformNames[platform]}\n\n` +
+                   `🔗 搜索链接: ${platformUrls[platform]}\n\n` +
+                   `📚 常用文档入口:\n` +
+                   `• 小程序开发文档: developers.weixin.qq.com/miniprogram/dev/framework/\n` +
+                   `• 小程序API: developers.weixin.qq.com/miniprogram/dev/api/\n` +
+                   `• 小程序组件: developers.weixin.qq.com/miniprogram/dev/component/\n` +
+                   `• 公众号开发: developers.weixin.qq.com/doc/offiaccount/\n` +
+                   `• 微信支付: pay.weixin.qq.com/wiki/doc/apiv3/\n` +
+                   `• 开放平台: open.weixin.qq.com/\n\n` +
+                   `💡 开发技巧:\n` +
+                   `• 使用微信开发者工具进行真机调试\n` +
+                   `• 查看社区问答: developers.weixin.qq.com/community/\n` +
+                   `• 关注微信公众平台公告获取最新变更\n` +
+                   `• 使用HBuilderX进行uni-app跨平台开发\n\n` +
+                   `🛠️ 常用工具:\n` +
+                   `• 微信开发者工具: developers.weixin.qq.com/miniprogram/dev/devtools/\n` +
+                   `• 微信公众平台: mp.weixin.qq.com\n` +
+                   `• 微信商户平台: pay.weixin.qq.com`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_csdn': {
+        const { query, type = 'all' } = args;
+
+        const searchUrls = {
+          blog: `https://so.csdn.net/so/search?q=${encodeURIComponent(query)}&t=blog`,
+          ask: `https://so.csdn.net/so/search?q=${encodeURIComponent(query)}&t=ask`,
+          all: `https://so.csdn.net/so/search?q=${encodeURIComponent(query)}`
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `📝 CSDN搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📂 搜索类型: ${type === 'blog' ? '博客' : type === 'ask' ? '问答' : '全部'}\n\n` +
+                   `🔗 搜索链接: ${searchUrls[type]}\n\n` +
+                   `💡 CSDN使用技巧:\n` +
+                   `• 精确搜索: 使用双引号 "${query}"\n` +
+                   `• 排除关键词: 使用减号 ${query} -排除词\n` +
+                   `• 按时间筛选: 选择最近一年/半年/一月\n` +
+                   `• 查看高质量博主: 关注博客专家和推荐博主\n\n` +
+                   `📚 推荐栏目:\n` +
+                   `• CSDN博客: blog.csdn.net\n` +
+                   `• CSDN问答: ask.csdn.net\n` +
+                   `• 代码托管: codechina.csdn.net\n` +
+                   `• 在线学习: edu.csdn.net\n\n` +
+                   `⚠️ 注意事项:\n` +
+                   `• 注意博文发布时间，技术可能已更新\n` +
+                   `• 优先查看评论多、点赞高的文章\n` +
+                   `• 代码示例要结合自己项目调整\n` +
+                   `• 遇到付费内容可搜索免费替代方案`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_juejin': {
+        const { query, sort = 'hot' } = args;
+        const searchUrl = `https://juejin.cn/search?query=${encodeURIComponent(query)}&sort=${sort}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `💎 掘金搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📊 排序方式: ${sort === 'hot' ? '热门' : sort === 'time' ? '最新' : '点赞'}\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n\n` +
+                   `💡 掘金特色:\n` +
+                   `• 高质量技术文章和前沿技术分享\n` +
+                   `• 活跃的技术社区和讨论氛围\n` +
+                   `• 优秀的前端和全栈内容\n` +
+                   `• 定期举办技术沙龙和活动\n\n` +
+                   `📚 推荐板块:\n` +
+                   `• 前端: 前端、JavaScript、Vue、React等\n` +
+                   `• 后端: Java、Python、Go、Node.js等\n` +
+                   `• 移动端: Android、iOS、Flutter等\n` +
+                   `• 人工智能: 机器学习、深度学习等\n\n` +
+                   `🏆 优质作者:\n` +
+                   `• 关注掘金优秀作者获取高质量内容\n` +
+                   `• 查看年度榜单和热门文章\n` +
+                   `• 参与沸点讨论交流技术\n\n` +
+                   `🎯 推荐功能:\n` +
+                   `• 掘金小册: 系统化学习资料\n` +
+                   `• 技术专栏: 深度技术文章\n` +
+                   `• 代码片段: 实用代码示例`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_segmentfault': {
+        const { query, tags = '' } = args;
+        let searchUrl = `https://segmentfault.com/search?q=${encodeURIComponent(query)}`;
+        if (tags) searchUrl += `&tags=${encodeURIComponent(tags)}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `🔧 SegmentFault搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `🏷️ 标签筛选: ${tags || '无限制'}\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n\n` +
+                   `💡 SegmentFault特色:\n` +
+                   `• 中国最专业的开发者社区之一\n` +
+                   `• 高质量的技术问答\n` +
+                   `• 活跃的技术讨论氛围\n` +
+                   `• 丰富的技术文章和教程\n\n` +
+                   `📚 推荐功能:\n` +
+                   `• 问答: 解决具体技术问题\n` +
+                   `• 专栏: 系列技术文章\n` +
+                   `• 讲堂: 在线技术分享\n` +
+                   `• 笔记: 学习笔记和总结\n\n` +
+                   `🎯 使用技巧:\n` +
+                   `• 查看高赞和已采纳的答案\n` +
+                   `• 关注相关标签获取最新内容\n` +
+                   `• 参与讨论提升技术理解\n` +
+                   `• 查看用户声望了解回答质量\n\n` +
+                   `🏆 热门标签:\n` +
+                   `• javascript, react, vue, node.js\n` +
+                   `• python, java, go, php\n` +
+                   `• 前端, 后端, 算法, 架构`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_cnblogs': {
+        const { query } = args;
+        const searchUrl = `https://zzk.cnblogs.com/s?w=${encodeURIComponent(query)}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `📚 博客园搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n\n` +
+                   `💡 博客园特色:\n` +
+                   `• 中国最早的开发者社区之一\n` +
+                   `• 深度技术文章和系列教程\n` +
+                   `• .NET和C#技术内容丰富\n` +
+                   `• 优质博主长期维护内容\n\n` +
+                   `📚 推荐功能:\n` +
+                   `• 博客: 个人技术博客\n` +
+                   `• 新闻: 技术资讯和动态\n` +
+                   `• 知识库: 系统化知识整理\n` +
+                   `• 小组: 技术交流小组\n\n` +
+                   `🎯 阅读建议:\n` +
+                   `• 关注推荐博主和首页精华\n` +
+                   `• 查看文章系列获取完整知识\n` +
+                   `• 阅读评论区的讨论和补充\n` +
+                   `• 注意文章更新时间\n\n` +
+                   `🏆 优势领域:\n` +
+                   `• .NET、C#、ASP.NET技术栈\n` +
+                   `• 数据库、SQL Server\n` +
+                   `• 算法和数据结构\n` +
+                   `• 系统架构和设计模式`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_oschina': {
+        const { query, type = 'all' } = args;
+        const searchUrls = {
+          news: `https://www.oschina.net/search?scope=news&q=${encodeURIComponent(query)}`,
+          blog: `https://www.oschina.net/search?scope=blog&q=${encodeURIComponent(query)}`,
+          ask: `https://www.oschina.net/search?scope=ask&q=${encodeURIComponent(query)}`,
+          project: `https://www.oschina.net/search?scope=project&q=${encodeURIComponent(query)}`,
+          all: `https://www.oschina.net/search?q=${encodeURIComponent(query)}`
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `🌐 开源中国搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📂 搜索类型: ${type === 'news' ? '资讯' : type === 'blog' ? '博客' : type === 'ask' ? '问答' : type === 'project' ? '项目' : '全部'}\n\n` +
+                   `🔗 搜索链接: ${searchUrls[type]}\n\n` +
+                   `💡 开源中国特色:\n` +
+                   `• 专注开源技术和开源项目\n` +
+                   `• 丰富的开源软件和代码托管\n` +
+                   `• 及时的技术资讯和行业动态\n` +
+                   `• 活跃的开源社区\n\n` +
+                   `📚 推荐栏目:\n` +
+                   `• Gitee: 国内代码托管平台 gitee.com\n` +
+                   `• 开源软件: 发现优质开源项目\n` +
+                   `• 技术问答: 解决开发问题\n` +
+                   `• 技术博客: 开发者经验分享\n\n` +
+                   `🎯 实用功能:\n` +
+                   `• 开源软件搜索: 查找替代方案\n` +
+                   `• 代码片段: 实用代码示例\n` +
+                   `• 技术翻译: 国外技术文章翻译\n` +
+                   `• 开源资讯: 了解开源动态\n\n` +
+                   `🏆 推荐关注:\n` +
+                   `• 关注热门开源项目\n` +
+                   `• 参与开源项目贡献\n` +
+                   `• 使用Gitee托管代码\n` +
+                   `• 查看技术周刊和月报`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_aliyun_docs': {
+        const { query, product = '' } = args;
+        const searchUrl = product
+          ? `https://help.aliyun.com/search/product/${product}?q=${encodeURIComponent(query)}`
+          : `https://help.aliyun.com/search?q=${encodeURIComponent(query)}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `☁️ 阿里云文档搜索\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📦 产品范围: ${product || '全部产品'}\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n\n` +
+                   `📚 热门产品文档:\n` +
+                   `• ECS云服务器: help.aliyun.com/product/25365.html\n` +
+                   `• OSS对象存储: help.aliyun.com/product/31815.html\n` +
+                   `• RDS数据库: help.aliyun.com/product/26090.html\n` +
+                   `• SLB负载均衡: help.aliyun.com/product/27537.html\n` +
+                   `• CDN加速: help.aliyun.com/product/27099.html\n\n` +
+                   `💡 开发资源:\n` +
+                   `• SDK下载: 支持多种编程语言\n` +
+                   `• API参考: 详细的API文档\n` +
+                   `• 最佳实践: 实际应用案例\n` +
+                   `• 开发者论坛: developer.aliyun.com/ask/\n\n` +
+                   `🛠️ 实用工具:\n` +
+                   `• 阿里云控制台: console.aliyun.com\n` +
+                   `• 云命令行: CloudShell在线终端\n` +
+                   `• API Explorer: 在线调试API\n` +
+                   `• 成本计算器: 估算资源费用\n\n` +
+                   `🎯 学习资源:\n` +
+                   `• 阿里云大学: edu.aliyun.com\n` +
+                   `• 在线实验室: 免费实践环境\n` +
+                   `• 认证考试: 获取专业认证`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_tencent_docs': {
+        const { query, product = '' } = args;
+        const searchUrl = product
+          ? `https://cloud.tencent.com/document/product/search?q=${encodeURIComponent(query)}&product=${product}`
+          : `https://cloud.tencent.com/document/search?q=${encodeURIComponent(query)}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `☁️ 腾讯云文档搜索\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📦 产品范围: ${product || '全部产品'}\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n\n` +
+                   `📚 热门产品文档:\n` +
+                   `• CVM云服务器: cloud.tencent.com/document/product/213\n` +
+                   `• COS对象存储: cloud.tencent.com/document/product/436\n` +
+                   `• CDN加速: cloud.tencent.com/document/product/228\n` +
+                   `• CLB负载均衡: cloud.tencent.com/document/product/214\n` +
+                   `• SCF云函数: cloud.tencent.com/document/product/583\n\n` +
+                   `💡 开发资源:\n` +
+                   `• SDK中心: 多语言SDK支持\n` +
+                   `• API文档: 完整的API参考\n` +
+                   `• 最佳实践: 实际应用案例\n` +
+                   `• 开发者社区: cloud.tencent.com/developer/\n\n` +
+                   `🛠️ 实用工具:\n` +
+                   `• 控制台: console.cloud.tencent.com\n` +
+                   `• API Explorer: 在线调试API\n` +
+                   `• CLI工具: 命令行管理工具\n` +
+                   `• 价格计算器: 费用估算\n\n` +
+                   `🎯 学习资源:\n` +
+                   `• 腾讯云大学: 在线课程和认证\n` +
+                   `• 技术社区: 开发者交流\n` +
+                   `• 实验室: 免费实践环境\n` +
+                   `• 技术沙龙: 线下技术分享`
+            },
+          ],
+        };
+      }
+
       case 'ai_debug_suggestion': {
         const { error_description, code_snippet = '', environment = 'Browser' } = args;
 
@@ -1297,7 +1710,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('AI Rule MCP Server v0.5.0 running on stdio');
+  console.error('AI Rule MCP Server v0.6.0 running on stdio');
 }
 
 main().catch((error) => {

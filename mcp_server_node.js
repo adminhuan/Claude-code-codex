@@ -10,7 +10,7 @@ import {
 const server = new Server(
   {
     name: 'ai-rule-mcp-server',
-    version: '0.2.0',
+    version: '0.5.0',
   },
   {
     capabilities: {
@@ -175,6 +175,152 @@ const AI_TOOLS = [
       properties: {
         check_areas: { type: 'array', items: { type: 'string' }, description: '检查领域数组' }
       }
+    }
+  },
+
+  // === 搜索资料工具 ===
+  {
+    name: 'ai_search_web',
+    description: '🔍 网络搜索 - 搜索网络资料和文档，支持多种搜索引擎（Google、Bing、百度等）',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        engine: { type: 'string', enum: ['google', 'bing', 'baidu', 'sogou'], description: '搜索引擎，默认baidu', default: 'baidu' },
+        count: { type: 'number', description: '返回结果数量，默认10', default: 10 }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_github',
+    description: '📦 GitHub搜索 - 搜索GitHub上的代码、仓库、问题和文档',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        type: { type: 'string', enum: ['repositories', 'code', 'issues', 'users'], description: '搜索类型，默认repositories', default: 'repositories' },
+        language: { type: 'string', description: '编程语言筛选（可选）' },
+        sort: { type: 'string', enum: ['stars', 'forks', 'updated'], description: '排序方式，默认stars', default: 'stars' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_stackoverflow',
+    description: '💬 StackOverflow搜索 - 搜索技术问题和解决方案',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词或问题描述' },
+        tags: { type: 'string', description: '标签筛选（如：javascript,react）' },
+        sort: { type: 'string', enum: ['relevance', 'votes', 'creation', 'activity'], description: '排序方式，默认relevance', default: 'relevance' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_npm',
+    description: '📦 NPM包搜索 - 搜索NPM包和相关文档',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '包名或关键词' },
+        size: { type: 'number', description: '返回结果数量，默认10', default: 10 }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_docs',
+    description: '📚 技术文档搜索 - 搜索常见框架和工具的官方文档（React、Vue、Node.js等）',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: '搜索关键词' },
+        framework: { type: 'string', enum: ['react', 'vue', 'angular', 'nodejs', 'python', 'java', 'general'], description: '指定框架，默认general', default: 'general' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'ai_search_api_reference',
+    description: '🔗 API参考搜索 - 快速查找API文档和使用示例',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        api_name: { type: 'string', description: 'API名称或方法名' },
+        platform: { type: 'string', description: '平台或库名称（如：express、axios、lodash）' }
+      },
+      required: ['api_name', 'platform']
+    }
+  },
+
+  // === 浏览器控制台监控工具 ===
+  {
+    name: 'ai_console_error_monitor',
+    description: '🐛 浏览器控制台错误监控 - 获取和分析浏览器控制台报错信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        error_message: { type: 'string', description: '错误消息内容' },
+        error_type: { type: 'string', enum: ['JavaScript', 'Network', 'CORS', 'Syntax', 'Reference', 'Type', 'Range', 'Unknown'], description: '错误类型', default: 'Unknown' },
+        stack_trace: { type: 'string', description: '错误堆栈信息（可选）' },
+        file_path: { type: 'string', description: '出错文件路径（可选）' },
+        line_number: { type: 'number', description: '出错行号（可选）' }
+      },
+      required: ['error_message']
+    }
+  },
+  {
+    name: 'ai_console_warning_check',
+    description: '⚠️ 控制台警告检查 - 检查和分析控制台警告信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        warning_message: { type: 'string', description: '警告消息内容' },
+        warning_source: { type: 'string', description: '警告来源（如：React、Vue、Browser等）' }
+      },
+      required: ['warning_message']
+    }
+  },
+  {
+    name: 'ai_network_error_diagnosis',
+    description: '🌐 网络请求错误诊断 - 分析网络请求失败的原因',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: '请求URL' },
+        status_code: { type: 'number', description: 'HTTP状态码（如：404、500）' },
+        error_message: { type: 'string', description: '错误消息' },
+        request_method: { type: 'string', enum: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: '请求方法', default: 'GET' }
+      },
+      required: ['url', 'status_code']
+    }
+  },
+  {
+    name: 'ai_console_log_analyzer',
+    description: '📊 控制台日志分析 - 分析控制台日志模式和潜在问题',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        logs: { type: 'string', description: '控制台日志内容（可以是多行）' },
+        analysis_type: { type: 'string', enum: ['performance', 'errors', 'warnings', 'all'], description: '分析类型', default: 'all' }
+      },
+      required: ['logs']
+    }
+  },
+  {
+    name: 'ai_debug_suggestion',
+    description: '🔧 调试建议生成 - 根据错误信息生成调试建议和解决方案',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        error_description: { type: 'string', description: '错误描述' },
+        code_snippet: { type: 'string', description: '相关代码片段（可选）' },
+        environment: { type: 'string', description: '运行环境（如：Chrome、Firefox、Node.js等）' }
+      },
+      required: ['error_description']
     }
   }
 ];
@@ -615,6 +761,523 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      // === 搜索工具处理 ===
+      case 'ai_search_web': {
+        const { query, engine = 'baidu', count = 10 } = args;
+        const searchUrls = {
+          google: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+          bing: `https://www.bing.com/search?q=${encodeURIComponent(query)}`,
+          baidu: `https://www.baidu.com/s?wd=${encodeURIComponent(query)}`,
+          sogou: `https://www.sogou.com/web?query=${encodeURIComponent(query)}`
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `🔍 网络搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `🌐 搜索引擎: ${engine.toUpperCase()}\n` +
+                   `📊 结果数量: ${count}\n\n` +
+                   `🔗 搜索链接: ${searchUrls[engine]}\n\n` +
+                   `💡 搜索建议:\n` +
+                   `• 使用双引号精确匹配: "${query}"\n` +
+                   `• 使用减号排除: ${query} -排除词\n` +
+                   `• 限定网站搜索: site:github.com ${query}\n` +
+                   `• 限定文件类型: filetype:pdf ${query}\n\n` +
+                   `📝 提示: Claude Code会为您访问该链接获取搜索结果。\n` +
+                   `国内用户建议使用百度(baidu)或搜狗(sogou)搜索引擎以获得更快的访问速度。`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_github': {
+        const { query, type = 'repositories', language = '', sort = 'stars' } = args;
+        let searchUrl = `https://github.com/search?q=${encodeURIComponent(query)}&type=${type}`;
+        if (language) searchUrl += `&l=${encodeURIComponent(language)}`;
+        searchUrl += `&s=${sort}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `📦 GitHub搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📂 搜索类型: ${type}\n` +
+                   `💻 编程语言: ${language || '所有语言'}\n` +
+                   `📊 排序方式: ${sort}\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n\n` +
+                   `💡 热门仓库推荐标准:\n` +
+                   `• ⭐ Stars > 1000: 优质项目\n` +
+                   `• 🍴 Forks > 500: 活跃社区\n` +
+                   `• 🔄 最近更新: 持续维护\n` +
+                   `• 📄 完整文档: 易于使用\n\n` +
+                   `🔍 搜索技巧:\n` +
+                   `• stars:>1000 - 搜索星标数大于1000的仓库\n` +
+                   `• language:javascript - 限定编程语言\n` +
+                   `• user:username - 搜索特定用户的仓库\n` +
+                   `• topic:react - 搜索特定主题\n\n` +
+                   `📝 提示: GitHub API可能需要代理访问，建议使用国内镜像如 gitee.com 或 gitcode.net`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_stackoverflow': {
+        const { query, tags = '', sort = 'relevance' } = args;
+        let searchUrl = `https://stackoverflow.com/search?q=${encodeURIComponent(query)}`;
+        if (tags) searchUrl += `&tags=${encodeURIComponent(tags)}`;
+        searchUrl += `&sort=${sort}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `💬 StackOverflow搜索结果\n\n` +
+                   `🎯 搜索问题: ${query}\n` +
+                   `🏷️ 标签筛选: ${tags || '无限制'}\n` +
+                   `📊 排序方式: ${sort}\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n\n` +
+                   `✅ 寻找优质答案:\n` +
+                   `• ✓ 绿色勾号: 已被采纳的答案\n` +
+                   `• ⬆️ 高赞: 投票数高的答案更可靠\n` +
+                   `• 📅 最新: 注意答案发布时间，技术可能已更新\n\n` +
+                   `🔍 搜索技巧:\n` +
+                   `• [javascript] - 搜索包含特定标签的问题\n` +
+                   `• is:question - 只搜索问题\n` +
+                   `• is:answer - 只搜索答案\n` +
+                   `• score:5 - 搜索评分大于5的内容\n\n` +
+                   `🌏 国内替代:\n` +
+                   `• SegmentFault: segmentfault.com\n` +
+                   `• 掘金: juejin.cn\n` +
+                   `• CSDN: csdn.net`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_npm': {
+        const { query, size = 10 } = args;
+        const searchUrl = `https://www.npmjs.com/search?q=${encodeURIComponent(query)}`;
+        const registryUrl = `https://registry.npmjs.org/${encodeURIComponent(query)}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `📦 NPM包搜索结果\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `📊 显示结果: ${size}个\n\n` +
+                   `🔗 搜索链接: ${searchUrl}\n` +
+                   `📋 包详情API: ${registryUrl}\n\n` +
+                   `✅ 选择优质包的标准:\n` +
+                   `• 📈 周下载量 > 10,000\n` +
+                   `• ⭐ GitHub Stars 数量\n` +
+                   `• 📅 最近更新时间\n` +
+                   `• 📝 完整的文档和示例\n` +
+                   `• 🧪 测试覆盖率\n` +
+                   `• 🔒 无已知安全漏洞\n\n` +
+                   `🔍 常用NPM命令:\n` +
+                   `\`\`\`bash\n` +
+                   `# 安装包\n` +
+                   `npm install ${query}\n\n` +
+                   `# 查看包信息\n` +
+                   `npm info ${query}\n\n` +
+                   `# 查看包的所有版本\n` +
+                   `npm view ${query} versions\n` +
+                   `\`\`\`\n\n` +
+                   `🌏 国内加速镜像:\n` +
+                   `• 淘宝镜像: npmmirror.com\n` +
+                   `• 使用: npm config set registry https://registry.npmmirror.com`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_docs': {
+        const { query, framework = 'general' } = args;
+        const docsUrls = {
+          react: `https://react.dev/?search=${encodeURIComponent(query)}`,
+          vue: `https://cn.vuejs.org/search.html?query=${encodeURIComponent(query)}`,
+          angular: `https://angular.io/search?query=${encodeURIComponent(query)}`,
+          nodejs: `https://nodejs.org/api/?search=${encodeURIComponent(query)}`,
+          python: `https://docs.python.org/3/search.html?q=${encodeURIComponent(query)}`,
+          java: `https://docs.oracle.com/en/java/javase/search.html?q=${encodeURIComponent(query)}`,
+          general: `https://devdocs.io/#q=${encodeURIComponent(query)}`
+        };
+
+        const cnDocs = {
+          react: 'https://zh-hans.react.dev/',
+          vue: 'https://cn.vuejs.org/',
+          nodejs: 'http://nodejs.cn/api/',
+          python: 'https://docs.python.org/zh-cn/3/'
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `📚 技术文档搜索\n\n` +
+                   `🎯 搜索关键词: ${query}\n` +
+                   `🔧 框架/平台: ${framework}\n\n` +
+                   `🔗 官方文档: ${docsUrls[framework]}\n` +
+                   `${cnDocs[framework] ? `🇨🇳 中文文档: ${cnDocs[framework]}\n` : ''}\n` +
+                   `📖 常用文档资源:\n` +
+                   `• React: react.dev (中文: zh-hans.react.dev)\n` +
+                   `• Vue: vuejs.org (中文: cn.vuejs.org)\n` +
+                   `• Node.js: nodejs.org (中文: nodejs.cn)\n` +
+                   `• MDN Web Docs: developer.mozilla.org (部分中文支持)\n` +
+                   `• DevDocs: devdocs.io (多文档聚合)\n\n` +
+                   `🌏 国内优质文档站:\n` +
+                   `• 现代JavaScript教程: zh.javascript.info\n` +
+                   `• ES6入门: es6.ruanyifeng.com\n` +
+                   `• TypeScript中文网: tslang.cn\n` +
+                   `• Webpack中文网: webpack.docschina.org\n\n` +
+                   `💡 提示: 中文文档通常更新较慢，遇到新特性建议查阅英文官方文档`
+            },
+          ],
+        };
+      }
+
+      case 'ai_search_api_reference': {
+        const { api_name, platform } = args;
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(`${platform} ${api_name} api documentation`)}`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `🔗 API参考搜索\n\n` +
+                   `🎯 API名称: ${api_name}\n` +
+                   `🔧 平台/库: ${platform}\n\n` +
+                   `🔍 搜索链接: ${searchUrl}\n\n` +
+                   `📚 常用API文档直达:\n` +
+                   `• Express: expressjs.com/en/4x/api.html\n` +
+                   `• Axios: axios-http.com/docs/intro\n` +
+                   `• Lodash: lodash.com/docs/\n` +
+                   `• Moment.js: momentjs.com/docs/\n` +
+                   `• jQuery: api.jquery.com\n\n` +
+                   `🔍 API查询技巧:\n` +
+                   `1. 查看官方API文档的搜索功能\n` +
+                   `2. 查看GitHub仓库的README和Wiki\n` +
+                   `3. 查看在线示例和教程\n` +
+                   `4. 参考TypeScript类型定义文件(.d.ts)\n\n` +
+                   `💡 快速上手建议:\n` +
+                   `• 先看API的基础用法示例\n` +
+                   `• 了解参数类型和返回值\n` +
+                   `• 注意版本差异和废弃警告\n` +
+                   `• 查看相关的最佳实践\n\n` +
+                   `🌏 推荐开发工具:\n` +
+                   `• Postman: API测试工具\n` +
+                   `• Insomnia: REST客户端\n` +
+                   `• VS Code插件: REST Client`
+            },
+          ],
+        };
+      }
+
+      // === 浏览器控制台监控工具处理 ===
+      case 'ai_console_error_monitor': {
+        const { error_message, error_type = 'Unknown', stack_trace = '', file_path = '', line_number = 0 } = args;
+
+        // 错误类型分析
+        const errorAnalysis = {
+          'JavaScript': '常见于代码逻辑错误、未定义变量、函数调用错误',
+          'Network': '网络请求失败，可能是服务器问题、CORS、超时',
+          'CORS': '跨域资源共享问题，需要服务器配置CORS头',
+          'Syntax': '语法错误，代码书写不符合JavaScript规范',
+          'Reference': '引用错误，访问未定义的变量或属性',
+          'Type': '类型错误，对错误类型的值进行操作',
+          'Range': '范围错误，数值超出有效范围',
+          'Unknown': '未知错误，需要进一步分析'
+        };
+
+        const commonSolutions = {
+          'JavaScript': [
+            '检查变量是否已定义',
+            '确认函数调用参数正确',
+            '使用try-catch捕获错误',
+            '查看浏览器兼容性'
+          ],
+          'Network': [
+            '检查网络连接',
+            '确认API端点是否正确',
+            '查看服务器状态',
+            '检查请求超时设置',
+            '查看Network面板详细信息'
+          ],
+          'CORS': [
+            '服务器添加Access-Control-Allow-Origin头',
+            '使用代理服务器',
+            '后端配置CORS中间件',
+            '检查credentials设置'
+          ],
+          'Syntax': [
+            '检查代码语法',
+            '确认括号、引号配对',
+            '使用ESLint检查',
+            '查看构建工具报错'
+          ],
+          'Reference': [
+            '确认变量已声明',
+            '检查对象属性是否存在',
+            '使用可选链操作符 ?.',
+            '添加变量存在性检查'
+          ],
+          'Type': [
+            '检查数据类型',
+            '添加类型转换',
+            '使用TypeScript进行类型检查',
+            '验证API返回数据格式'
+          ]
+        };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `🐛 浏览器控制台错误分析\n\n` +
+                   `📋 错误详情:\n` +
+                   `• 类型: ${error_type}\n` +
+                   `• 消息: ${error_message}\n` +
+                   `${file_path ? `• 文件: ${file_path}\n` : ''}` +
+                   `${line_number ? `• 行号: ${line_number}\n` : ''}` +
+                   `${stack_trace ? `\n📊 堆栈跟踪:\n${stack_trace}\n` : ''}\n` +
+                   `🔍 错误分析:\n${errorAnalysis[error_type] || errorAnalysis['Unknown']}\n\n` +
+                   `💡 解决方案建议:\n` +
+                   (commonSolutions[error_type] || commonSolutions['JavaScript']).map((s, i) => `${i + 1}. ${s}`).join('\n') + '\n\n' +
+                   `🛠️ 调试步骤:\n` +
+                   `1. 打开浏览器开发者工具 (F12)\n` +
+                   `2. 查看Console面板的完整错误信息\n` +
+                   `3. 点击错误信息跳转到源代码位置\n` +
+                   `4. 使用断点调试查看变量值\n` +
+                   `5. 检查Network面板的网络请求\n\n` +
+                   `📚 参考资源:\n` +
+                   `• MDN错误参考: developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Errors\n` +
+                   `• Chrome DevTools: developers.google.com/web/tools/chrome-devtools\n` +
+                   `• StackOverflow搜索: stackoverflow.com/search?q=${encodeURIComponent(error_message)}`
+            },
+          ],
+        };
+      }
+
+      case 'ai_console_warning_check': {
+        const { warning_message, warning_source = 'Browser' } = args;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `⚠️ 控制台警告分析\n\n` +
+                   `📋 警告详情:\n` +
+                   `• 来源: ${warning_source}\n` +
+                   `• 消息: ${warning_message}\n\n` +
+                   `🔍 警告类型分析:\n` +
+                   `• Deprecation Warning: 使用了已弃用的API\n` +
+                   `• Performance Warning: 性能问题警告\n` +
+                   `• React Warning: React特定警告\n` +
+                   `• Vue Warning: Vue特定警告\n` +
+                   `• Security Warning: 安全相关警告\n\n` +
+                   `💡 处理建议:\n` +
+                   `1. 虽然是警告不是错误，但应该及时修复\n` +
+                   `2. 弃用警告可能在未来版本导致错误\n` +
+                   `3. 性能警告会影响用户体验\n` +
+                   `4. 安全警告必须立即处理\n\n` +
+                   `🛠️ 常见警告解决方案:\n` +
+                   `• React: 检查key属性、生命周期方法、setState使用\n` +
+                   `• Vue: 检查响应式数据、组件注册、指令使用\n` +
+                   `• 浏览器API: 查看MDN文档的替代方案\n` +
+                   `• 第三方库: 更新到最新版本或查看文档\n\n` +
+                   `📚 推荐做法:\n` +
+                   `• 使用ESLint捕获潜在问题\n` +
+                   `• 定期更新依赖包\n` +
+                   `• 查看官方迁移指南\n` +
+                   `• 在开发环境及时修复警告`
+            },
+          ],
+        };
+      }
+
+      case 'ai_network_error_diagnosis': {
+        const { url, status_code, error_message = '', request_method = 'GET' } = args;
+
+        const statusCodeAnalysis = {
+          400: { title: 'Bad Request', desc: '请求参数错误或格式不正确' },
+          401: { title: 'Unauthorized', desc: '未授权，需要身份验证' },
+          403: { title: 'Forbidden', desc: '服务器拒绝访问，权限不足' },
+          404: { title: 'Not Found', desc: '请求的资源不存在' },
+          405: { title: 'Method Not Allowed', desc: '不支持该HTTP方法' },
+          408: { title: 'Request Timeout', desc: '请求超时' },
+          429: { title: 'Too Many Requests', desc: '请求过于频繁，触发限流' },
+          500: { title: 'Internal Server Error', desc: '服务器内部错误' },
+          502: { title: 'Bad Gateway', desc: '网关错误' },
+          503: { title: 'Service Unavailable', desc: '服务不可用' },
+          504: { title: 'Gateway Timeout', desc: '网关超时' }
+        };
+
+        const statusInfo = statusCodeAnalysis[status_code] || { title: 'Unknown Error', desc: '未知错误' };
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `🌐 网络请求错误诊断\n\n` +
+                   `📋 请求详情:\n` +
+                   `• URL: ${url}\n` +
+                   `• 方法: ${request_method}\n` +
+                   `• 状态码: ${status_code} - ${statusInfo.title}\n` +
+                   `${error_message ? `• 错误消息: ${error_message}\n` : ''}\n` +
+                   `🔍 错误分析:\n${statusInfo.desc}\n\n` +
+                   `💡 解决方案:\n` +
+                   (status_code >= 400 && status_code < 500 ?
+                     `客户端错误 (4xx):\n` +
+                     `1. 检查请求URL是否正确\n` +
+                     `2. 验证请求参数格式和值\n` +
+                     `3. 确认token或认证信息有效\n` +
+                     `4. 检查请求方法是否正确\n` +
+                     `5. 查看API文档确认参数要求\n` :
+                   status_code >= 500 ?
+                     `服务器错误 (5xx):\n` +
+                     `1. 稍后重试请求\n` +
+                     `2. 联系后端开发人员\n` +
+                     `3. 查看服务器日志\n` +
+                     `4. 检查服务器负载和状态\n` +
+                     `5. 确认数据库连接正常\n` :
+                     `1. 检查网络连接\n` +
+                     `2. 确认请求配置正确\n` +
+                     `3. 查看详细错误信息\n`) +
+                   `\n🛠️ 调试技巧:\n` +
+                   `1. 打开Network面板查看详细信息\n` +
+                   `2. 检查Request Headers和Response Headers\n` +
+                   `3. 查看Request Payload和Response\n` +
+                   `4. 使用Postman等工具独立测试API\n` +
+                   `5. 检查CORS设置（跨域请求）\n\n` +
+                   `📊 常见HTTP状态码:\n` +
+                   `• 2xx: 成功\n` +
+                   `• 3xx: 重定向\n` +
+                   `• 4xx: 客户端错误\n` +
+                   `• 5xx: 服务器错误\n\n` +
+                   `🔗 有用工具:\n` +
+                   `• HTTP状态码查询: httpstatuses.com\n` +
+                   `• API测试: Postman/Insomnia\n` +
+                   `• 网络抓包: Charles/Fiddler`
+            },
+          ],
+        };
+      }
+
+      case 'ai_console_log_analyzer': {
+        const { logs, analysis_type = 'all' } = args;
+
+        // 简单的日志模式识别
+        const errorCount = (logs.match(/error|Error|ERROR/gi) || []).length;
+        const warningCount = (logs.match(/warning|Warning|WARN/gi) || []).length;
+        const networkCount = (logs.match(/fetch|axios|request|XMLHttpRequest/gi) || []).length;
+        const performanceCount = (logs.match(/performance|slow|timeout|delay/gi) || []).length;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `📊 控制台日志分析报告\n\n` +
+                   `📋 分析类型: ${analysis_type}\n` +
+                   `📝 日志长度: ${logs.length} 字符\n\n` +
+                   `🔍 问题统计:\n` +
+                   `• ❌ 错误数量: ${errorCount}\n` +
+                   `• ⚠️ 警告数量: ${warningCount}\n` +
+                   `• 🌐 网络请求: ${networkCount}\n` +
+                   `• ⏱️ 性能相关: ${performanceCount}\n\n` +
+                   `💡 分析建议:\n` +
+                   (errorCount > 0 ? `• 发现 ${errorCount} 个错误，需要优先处理\n` : '') +
+                   (warningCount > 5 ? `• 警告数量较多 (${warningCount}个)，建议及时清理\n` : '') +
+                   (networkCount > 10 ? `• 网络请求较多，考虑合并或优化请求\n` : '') +
+                   (performanceCount > 0 ? `• 发现性能相关日志，建议使用Performance面板深入分析\n` : '') +
+                   `\n🛠️ 日志最佳实践:\n` +
+                   `1. 生产环境关闭调试日志\n` +
+                   `2. 使用不同级别的日志 (log/warn/error)\n` +
+                   `3. 添加有意义的日志消息\n` +
+                   `4. 使用console.group组织日志\n` +
+                   `5. 避免在循环中打印大量日志\n\n` +
+                   `📈 推荐工具:\n` +
+                   `• Chrome Performance 面板\n` +
+                   `• React DevTools Profiler\n` +
+                   `• Vue DevTools Performance\n` +
+                   `• Sentry/LogRocket等日志服务\n\n` +
+                   `🔗 参考文档:\n` +
+                   `• Console API: developer.mozilla.org/zh-CN/docs/Web/API/Console\n` +
+                   `• 性能优化: web.dev/performance`
+            },
+          ],
+        };
+      }
+
+      case 'ai_debug_suggestion': {
+        const { error_description, code_snippet = '', environment = 'Browser' } = args;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `🔧 调试建议生成\n\n` +
+                   `📋 问题描述:\n${error_description}\n\n` +
+                   `💻 运行环境: ${environment}\n` +
+                   `${code_snippet ? `\n📝 相关代码:\n\`\`\`\n${code_snippet}\n\`\`\`\n` : ''}\n` +
+                   `🔍 系统化调试流程:\n\n` +
+                   `### 1️⃣ 问题定位\n` +
+                   `• 确认错误是否可复现\n` +
+                   `• 记录错误出现的具体操作步骤\n` +
+                   `• 查看完整的错误堆栈\n` +
+                   `• 确认是否为特定环境问题\n\n` +
+                   `### 2️⃣ 信息收集\n` +
+                   `• 浏览器: ${environment}\n` +
+                   `• 错误类型和消息\n` +
+                   `• 发生错误的文件和行号\n` +
+                   `• 网络请求状态（如果相关）\n` +
+                   `• 相关变量的值\n\n` +
+                   `### 3️⃣ 调试技巧\n` +
+                   `• 使用 console.log() 打印关键变量\n` +
+                   `• 设置断点单步调试\n` +
+                   `• 使用 debugger 语句\n` +
+                   `• 查看调用栈 (Call Stack)\n` +
+                   `• 监视变量值 (Watch)\n\n` +
+                   `### 4️⃣ 常用调试命令\n` +
+                   `\`\`\`javascript\n` +
+                   `// 打印对象\n` +
+                   `console.log('变量值:', variable);\n\n` +
+                   `// 打印对象详情\n` +
+                   `console.dir(object);\n\n` +
+                   `// 计时\n` +
+                   `console.time('操作');\n` +
+                   `// ...代码...\n` +
+                   `console.timeEnd('操作');\n\n` +
+                   `// 堆栈跟踪\n` +
+                   `console.trace();\n\n` +
+                   `// 条件断点\n` +
+                   `if (condition) debugger;\n` +
+                   `\`\`\`\n\n` +
+                   `### 5️⃣ 解决方案查找\n` +
+                   `1. 搜索错误消息 (Google/StackOverflow)\n` +
+                   `2. 查看官方文档和API文档\n` +
+                   `3. 检查GitHub Issues\n` +
+                   `4. 查看框架/库的更新日志\n` +
+                   `5. 咨询社区或技术论坛\n\n` +
+                   `### 6️⃣ 预防措施\n` +
+                   `• 使用TypeScript增强类型检查\n` +
+                   `• 配置ESLint捕获潜在问题\n` +
+                   `• 编写单元测试\n` +
+                   `• 使用try-catch处理异常\n` +
+                   `• 添加错误边界 (React)\n\n` +
+                   `🔗 有用资源:\n` +
+                   `• Chrome DevTools: developers.google.com/web/tools/chrome-devtools\n` +
+                   `• Firefox DevTools: developer.mozilla.org/zh-CN/docs/Tools\n` +
+                   `• JavaScript调试技巧: javascript.info/debugging-chrome\n` +
+                   `• React错误边界: react.dev/reference/react/Component#catching-errors-with-an-error-boundary`
+            },
+          ],
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -634,7 +1297,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('AI Rule MCP Server v0.2.0 running on stdio');
+  console.error('AI Rule MCP Server v0.5.0 running on stdio');
 }
 
 main().catch((error) => {

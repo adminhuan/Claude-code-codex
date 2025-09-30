@@ -1,0 +1,160 @@
+# 更新日志 (Changelog)
+
+所有重要的项目更改都将记录在此文件中。
+
+## [0.5.0] - 2025-09-30
+
+### 🎉 新增功能
+
+#### 🐛 控制台调试工具（5个全新工具）
+- **`ai_console_error_monitor`** - 浏览器控制台错误监控
+  - 支持多种错误类型分析：JavaScript、Network、CORS、Syntax、Reference、Type、Range
+  - 提供针对性解决方案和调试步骤
+  - 自动识别错误堆栈信息
+  - 包含MDN和StackOverflow参考链接
+
+- **`ai_console_warning_check`** - 控制台警告检查
+  - 识别React、Vue、浏览器API等框架警告
+  - 区分Deprecation、Performance、Security等警告类型
+  - 提供修复建议和最佳实践
+
+- **`ai_network_error_diagnosis`** - 网络请求错误诊断
+  - 详细分析HTTP状态码（400、401、403、404、500、502、503等）
+  - 区分客户端错误(4xx)和服务器错误(5xx)
+  - 提供具体的排查步骤和解决方案
+  - 推荐API测试工具（Postman、Insomnia等）
+
+- **`ai_console_log_analyzer`** - 控制台日志智能分析
+  - 自动统计错误、警告、网络请求数量
+  - 识别性能问题模式
+  - 提供日志优化建议
+  - 推荐日志管理工具（Sentry、LogRocket等）
+
+- **`ai_debug_suggestion`** - 系统化调试建议生成
+  - 提供6步系统化调试流程
+  - 包含常用调试命令和代码示例
+  - 支持多种运行环境（Chrome、Firefox、Node.js等）
+  - 提供预防措施建议（TypeScript、ESLint等）
+
+### 📈 功能改进
+- 工具总数从51个增加到56个
+- 完善的错误诊断和解决方案系统
+- 支持中文友好的错误提示
+
+### 📚 文档更新
+- 更新README添加控制台调试工具使用说明
+- 添加详细的使用示例
+- 创建CHANGELOG.md记录版本历史
+
+---
+
+## [0.4.0] - 2025-09-29
+
+### 🎉 新增功能
+
+#### 🔎 智能搜索工具（6个全新工具）
+- **`ai_search_web`** - 多引擎网络搜索
+  - 支持Google、Bing、百度、搜狗
+  - 默认使用百度（国内网络优化）
+  - 提供高级搜索技巧
+
+- **`ai_search_github`** - GitHub搜索
+  - 搜索仓库、代码、Issues、用户
+  - 支持语言筛选和排序
+  - 推荐国内镜像站（Gitee、GitCode）
+
+- **`ai_search_stackoverflow`** - StackOverflow搜索
+  - 搜索技术问答
+  - 支持标签筛选
+  - 推荐国内替代站（SegmentFault、掘金、CSDN）
+
+- **`ai_search_npm`** - NPM包搜索
+  - 搜索和评估NPM包
+  - 提供包质量评估标准
+  - 推荐淘宝NPM镜像
+
+- **`ai_search_docs`** - 技术文档搜索
+  - 支持React、Vue、Angular、Node.js、Python、Java等
+  - 提供中英文文档链接
+  - 推荐国内优质文档站
+
+- **`ai_search_api_reference`** - API参考搜索
+  - 快速查找API文档
+  - 常用库直达链接
+  - 推荐API测试工具
+
+### 📈 功能改进
+- 工具总数从45个增加到51个
+- 国内网络访问优化
+- 提供国内镜像站点推荐
+
+---
+
+## [0.3.0] - 2025-09-29
+
+### 🎉 新增功能
+
+#### 🔍 智能监督指导工具（7个全新工具）
+- **`ai_guide_project_rules`** - 项目规则书生成指导
+- **`ai_guide_development_plan`** - 开发计划生成指导
+- **`ai_guide_pr_review`** - PR审查清单生成指导
+- **`ai_guide_feature_request`** - 功能请求文档生成指导
+- **`ai_validate_content`** - 内容质量检查
+- **`ai_suggest_improvements`** - 改进建议生成
+- **`ai_project_health_check`** - 项目健康检查
+
+### 📈 功能改进
+- 工具总数从38个增加到45个
+- 增强AI监督能力，确保生成内容的专业性
+
+---
+
+## [0.2.0] - 2025-09-29
+
+### 🔄 重大变更
+- 使用官方MCP SDK重写服务器
+- 从Python实现迁移到Node.js实现
+- 移除Python依赖，简化安装流程
+
+### 📈 功能改进
+- 更好的性能和稳定性
+- 简化的配置流程
+- 纯Node.js实现，无需Python环境
+
+---
+
+## [0.1.0] - 2025-09-29
+
+### 🎉 首次发布
+
+#### 核心功能
+- 38个基础AI规则遵守工具
+- 4种工作模式（Normal/Plan/PR/FR）
+- 智能规则提醒和代码检查
+- 开发计划和PR管理
+- 功能请求系统
+- AI协作通信（可选）
+
+#### 基础工具列表
+- 规则提醒和管理
+- 代码合规检查
+- 工作模式切换
+- 开发计划创建
+- PR审查管理
+- 功能请求提交
+
+---
+
+## 版本说明
+
+本项目遵循[语义化版本控制](https://semver.org/zh-CN/)规范：
+
+- **主版本号**：不兼容的API变更
+- **次版本号**：向下兼容的功能性新增
+- **修订号**：向下兼容的问题修正
+
+## 链接
+
+- [GitHub仓库](https://github.com/adminhuan/Claude-code-codex)
+- [NPM包](https://www.npmjs.com/package/ai-rule-mcp-server)
+- [问题反馈](https://github.com/adminhuan/Claude-code-codex/issues)

@@ -1,7 +1,7 @@
 {
   "name": "smart-search-mcp",
-  "version": "0.7.0",
-  "description": "智能搜索MCP工具 - 14个搜索平台 + 5个控制台调试工具 + 38个编码规范 + 7个监督指导工具",
+  "version": "1.0.0",
+  "description": "Smart Search MCP - 15个真实可用工具：14个智能搜索（通过WebFetch真实获取结果） + 1个编码规范提醒（读取项目文件并监督Claude Code遵守规则）",
   "main": "mcp_server_node.js",
   "type": "module",
   "bin": {

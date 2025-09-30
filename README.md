@@ -52,10 +52,28 @@
 
 ## 🚀 快速开始
 
+### ⚠️ 从旧版本升级？
+
+如果你之前安装过 `ai-rule-mcp-server`，使用一键迁移脚本：
+
+```bash
+# 🔄 一键迁移（自动卸载旧版本并安装新版本）
+curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/migrate.sh | bash
+
+# 或手动迁移：
+# 1. 卸载旧版本
+npm uninstall -g ai-rule-mcp-server
+
+# 2. 删除旧的MCP配置
+# 编辑 ~/.claude.json 删除 "ai-rule-mcp-server" 配置
+
+# 3. 安装新版本（见下方）
+```
+
 ### ⚡ 一键安装 (推荐)
 ```bash
 # 🎯 Claude MCP命令 (最简单)
-claude mcp add smart-search-mcp --npm
+claude mcp add smart-search-mcp npx smart-search-mcp
 
 # 📜 或一键脚本安装
 curl -sSL https://raw.githubusercontent.com/adminhuan/Claude-code-codex/main/install.sh | bash

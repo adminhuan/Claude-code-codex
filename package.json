@@ -1,6 +1,6 @@
 {
   "name": "smart-search-mcp",
-  "version": "0.6.2",
+  "version": "0.6.4",
   "description": "智能搜索MCP工具 - 14个搜索平台 + 5个控制台调试工具 + 38个编码规范 + 7个监督指导工具",
   "main": "mcp_server_node.js",
   "type": "module",
@@ -43,7 +43,9 @@
     "README.md",
     "LICENSE",
     "USAGE_GUIDE.md",
+    "CHANGELOG.md",
     "install.sh",
+    "migrate.sh",
     "install-to-project.sh",
     "auto-install-global.sh"
   ],

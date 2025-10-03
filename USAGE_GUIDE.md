@@ -1,154 +1,107 @@
-# 🎯 AI规则监督工具使用指南
+# 🔎 Smart Search MCP 使用指南
 
-## 🌟 全新工作流程
-
-现在MCP工具作为**智能监督员**，指导Claude Code分析项目并生成高质量的规则书、计划、PR和FR文档。
-
-## 🚀 使用方式
-
-### 📋 生成项目规则书
-
-**你说**：
-```
-帮我根据这个微信小程序项目写一个开发规则书
-```
-
-**系统工作流程**：
-1. Claude Code自动分析项目结构和技术栈
-2. MCP监督工具提供详细的规则书生成指导
-3. Claude Code按照指导生成专业的开发规范文档
-
-**实际调用**：`ai_guide_project_rules` 工具提供结构化指导
+Smart Search MCP 是一组面向 Claude Code 的智能搜索工具，帮助你在 14 个国内外平台上快速找到真实、可用的资料。下面的指南带你从安装到高效搜索一步到位。
 
 ---
 
-### 📅 创建开发计划
+## 📦 安装与配置回顾
 
-**你说**：
-```
-给这个项目创建一个开发计划，目标是实现用户管理功能
-```
+1. **添加服务器**  
+   ```bash
+   claude mcp add smart-search-mcp npx smart-search-mcp
+   ```
 
-**系统工作流程**：
-1. Claude Code分析项目现状和需求
-2. MCP监督工具提供计划模板和结构指导
-3. Claude Code生成详细的里程碑和任务分解
+2. **配置 Claude Code**  
+   - 在 `~/.claude/settings.json` 中启用 `smart-search-mcp`；或
+   - 在项目目录创建 `.mcp.json`：
+     ```json
+     {
+       "servers": {
+         "smart-search-mcp": {
+           "command": "npx",
+           "args": ["smart-search-mcp@latest"]
+         }
+       }
+     }
+     ```
 
-**实际调用**：`ai_guide_development_plan` 工具指导计划创建
-
----
-
-### 🔍 创建PR审查
-
-**你说**：
-```
-帮我创建一个PR审查清单，这次改动是添加支付功能，风险等级中等
-```
-
-**系统工作流程**：
-1. Claude Code了解代码变更内容和影响范围
-2. MCP监督工具根据风险等级提供审查指导
-3. Claude Code生成针对性的代码审查清单
-
-**实际调用**：`ai_guide_pr_review` 工具提供风险级别对应的检查项
+3. **重启 Claude Code**，即可在对话中直接请求搜索。
 
 ---
 
-### ✨ 创建功能请求
+## 🚀 快速使用示例
 
-**你说**：
-```
-帮我写一个功能请求文档，要实现商品收藏功能，优先级高
-```
+| 需求 | 对话指令 | 调用的工具 |
+|------|-----------|-------------|
+| 学习 React Hooks | “搜索 React Hooks 最佳实践” | `ai_search_web` + WebFetch |
+| 选型 Vue3 后台模板 | “找 star 高的 Vue3 admin 仓库” | `ai_search_github` |
+| 排查 useEffect 警告 | “StackOverflow 上有没有 useEffect 依赖问题的解决方案” | `ai_search_stackoverflow` |
+| 寻找日期处理包 | “帮我搜 10 个日期处理的 npm 包” | `ai_search_npm` |
+| 查询微信支付退款 | “微信支付退款文档在哪” | `ai_search_wechat_docs` |
 
-**系统工作流程**：
-1. Claude Code理解功能需求和业务场景
-2. MCP监督工具提供FR模板和结构指导
-3. Claude Code生成完整的功能需求文档
-
-**实际调用**：`ai_guide_feature_request` 工具指导FR创建
-
----
-
-### ✅ 内容质量检查
-
-**你说**：
-```
-帮我检查这个规则文档的质量，看看有没有遗漏的地方
-```
-
-**系统工作流程**：
-1. Claude Code分析现有文档内容
-2. MCP监督工具提供质量检查清单
-3. Claude Code逐项检查并给出改进建议
-
-**实际调用**：`ai_validate_content` 工具提供检查标准
+每个工具都会给出：
+- 已校验的搜索 URL；
+- WebFetch 调用示例；
+- 高级搜索技巧与相关关键词；
+- 平台简介或热门主题建议。
 
 ---
 
-### 💡 改进建议
+## 🧭 工具全览
 
-**你说**：
-```
-这个开发计划感觉不够详细，帮我优化一下
-```
+### 国际平台（6 个）
 
-**系统工作流程**：
-1. Claude Code分析现有内容的不足
-2. MCP监督工具提供改进建议框架
-3. Claude Code给出具体的优化建议和修改方向
+| 工具 | 说明 | 主要用途 |
+|------|------|----------|
+| `ai_search_web` | Google/Bing/百度/搜狗 多引擎 | 通用问题、教程、案例 |
+| `ai_search_github` | 仓库/代码/Issues/用户 | 选型、源码学习、Issue 调研 |
+| `ai_search_stackoverflow` | 技术问答检索 | 错误排查、最佳实践 |
+| `ai_search_npm` | 网页 + API 双通道 | 包选型、下载量对比 |
+| `ai_search_docs` | React/Vue/Angular/Node/Python/Java/MDN | 官方文档速查 |
+| `ai_search_api_reference` | Google/DevDocs/GitHub/官方 | API 方法、示例代码 |
 
-**实际调用**：`ai_suggest_improvements` 工具指导改进
+### 国内平台（8 个）
 
----
-
-### 🏥 项目健康检查
-
-**你说**：
-```
-帮我检查一下这个项目的整体健康状况
-```
-
-**系统工作流程**：
-1. Claude Code扫描项目结构、代码、文档等
-2. MCP监督工具提供健康检查维度和标准
-3. Claude Code生成综合评估报告和改进建议
-
-**实际调用**：`ai_project_health_check` 工具提供检查框架
+| 工具 | 平台 | 推荐场景 |
+|------|------|----------|
+| `ai_search_wechat_docs` | 微信开发者文档 | 小程序、公众号、支付接口 |
+| `ai_search_csdn` | CSDN | 中文教程、踩坑分享 |
+| `ai_search_juejin` | 掘金 | 前端/后端热点文章 |
+| `ai_search_segmentfault` | SegmentFault | 中文 Q&A、技术讨论 |
+| `ai_search_cnblogs` | 博客园 | .NET、后端相关资源 |
+| `ai_search_oschina` | 开源中国 | 开源资讯、项目收录 |
+| `ai_search_aliyun_docs` | 阿里云文档 | 云产品部署、API 手册 |
+| `ai_search_tencent_docs` | 腾讯云文档 | 云服务操作、最佳实践 |
 
 ---
 
-## 🎯 核心优势
+## 💡 搜索技巧速查
 
-### 1. **分工明确**
-- Claude Code：项目分析、内容生成、实际执行
-- MCP工具：标准制定、质量监督、结构指导
+- **精确匹配**：`"关键词"`
+- **排除词**：`关键词 -排除词`
+- **限定站点**：`site:域名 关键词`
+- **文件类型**：`关键词 filetype:pdf`
+- **时间范围**：`关键词 after:2023`
 
-### 2. **质量保证**
-- 标准化模板确保内容完整性
-- 分层次检查保证专业性
-- 风险级别对应不同深度要求
+GitHub、StackOverflow、NPM 等工具还会额外提供平台专属语法（如 `stars:>1000`、`isaccepted:yes`、`maintainer:`），直接复制即可使用。
 
-### 3. **智能适配**
-- 根据项目类型调整内容重点
-- 按照风险等级定制检查深度
-- 基于优先级安排详细程度
+---
 
-### 4. **持续改进**
-- 内容质量验证和改进建议
-- 项目健康状况持续监控
-- 标准和模板不断优化
+## 🧪 WebFetch 配合建议
 
-## 🛠️ 可用工具总览
+1. 复制工具返回的 WebFetch 代码片段。  
+2. 根据需求调整 `prompt`，例如限定返回条数、关注字段等。  
+3. 对于结构化数据（NPM API、云厂商文档 JSON 接口），优先使用 API URL，解析更稳定。
 
-| 工具名称 | 用途 | 说明 |
-|---------|------|------|
-| `ai_guide_project_rules` | 指导规则书生成 | 提供项目特定的规范模板 |
-| `ai_guide_development_plan` | 指导开发计划 | 提供结构化的计划框架 |
-| `ai_guide_pr_review` | 指导PR审查 | 按风险级别定制检查清单 |
-| `ai_guide_feature_request` | 指导功能请求 | 提供完整的FR文档模板 |
-| `ai_validate_content` | 内容质量检查 | 验证文档完整性和准确性 |
-| `ai_suggest_improvements` | 改进建议 | 分析并提出优化方向 |
-| `ai_project_health_check` | 项目健康检查 | 全面评估项目状况 |
+---
 
-现在你可以直接用自然语言告诉Claude Code你的需求，它会自动调用相应的MCP工具来指导和监督，确保生成高质量的专业文档！
+## ❓ 常见问题
+
+- **结果真实可靠吗？**  所有工具只生成真实搜索 URL，需通过 WebFetch 抓取实际网页或接口结果。
+- **可以组合多个工具吗？**  可以。一个请求可以依次调用 GitHub 和 NPM，以同时了解开源趋势与包下载量。
+- **国内是否默认百度？**  网络搜索默认百度，可通过 `engine` 参数切换；微信文档等工具内置百度站内搜索。
+- **如何调参与过滤？**  每个工具的输入 schema 在 README 中有详细说明，可传入 `language`、`sort`、`tags` 等字段细化结果。
+
+---
+
+尽情使用 Smart Search MCP，让搜索不再成为瓶颈！

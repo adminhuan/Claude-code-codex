@@ -6,14 +6,14 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { readFile } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
 const server = new Server(
   {
     name: 'smart-search-mcp',
-    version: '1.0.0',
+    version: '2.0.0',
   },
   {
     capabilities: {
@@ -22,28 +22,57 @@ const server = new Server(
   }
 );
 
-// Smart Search MCP 工具定义
-// 只保留真实可用的功能：1个规则提醒 + 14个搜索
-const AI_TOOLS = [
-  // === 规则提醒工具 (1个真实实现) ===
-  {
-    name: 'ai_coding_rules_reminder',
-    description: '📋 编码规则提醒 - 读取项目中的编码规范文件并提醒Claude Code严格遵守\n\n功能：\n• 自动搜索项目中的规范文档（.md、.txt）\n• 读取并解析编码规范\n• 生成遵守提醒清单\n• 监督Claude Code的代码输出质量\n\n适用场景：\n• 开始编码前提醒规范\n• 代码审查时检查合规性\n• 团队协作时统一标准',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        project_path: { type: 'string', description: '项目根目录路径（默认：当前目录）', default: '.' },
-        focus_area: {
-          type: 'string',
-          enum: ['all', 'naming', 'structure', 'security', 'performance', 'documentation'],
-          description: '关注领域：all(全部)、naming(命名)、structure(结构)、security(安全)、performance(性能)、documentation(文档)',
-          default: 'all'
-        },
-        strict_mode: { type: 'boolean', description: '严格模式 - 启用时会更严格地检查规范遵守情况', default: false }
-      }
-    }
-  },
+const makeTextResponse = (text) => ({
+  content: [
+    {
+      type: 'text',
+      text,
+    },
+  ],
+});
 
+const pickKey = (map, key, fallback) => {
+  if (key && Object.prototype.hasOwnProperty.call(map, key)) {
+    return key;
+  }
+  return fallback;
+};
+
+const normalizeString = (value) => (typeof value === 'string' ? value.trim() : '');
+
+const clampNumber = (value, min, max, fallback) => {
+  const num = Number(value);
+  if (Number.isFinite(num)) {
+    const rounded = Math.round(num);
+    if (rounded < min) return min;
+    if (rounded > max) return max;
+    return rounded;
+  }
+  return fallback;
+};
+
+const saveSearchResult = async (toolName, query, details) => {
+  try {
+    const resultsDir = join(process.cwd(), '.search-results');
+    if (!existsSync(resultsDir)) {
+      await mkdir(resultsDir, { recursive: true });
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `${toolName}-${timestamp}.md`;
+    const filepath = join(resultsDir, filename);
+
+    await writeFile(filepath, details, 'utf-8');
+    return filepath;
+  } catch (error) {
+    console.error('Failed to save search result:', error);
+    return null;
+  }
+};
+
+// Smart Search MCP 工具定义
+// 只保留搜索功能：14个搜索工具
+const AI_TOOLS = [
   // === 国际搜索工具 (6个) ===
   {
     name: 'ai_search_web',
@@ -229,342 +258,567 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     switch (name) {
-      // === 规则提醒工具处理 ===
-      case 'ai_coding_rules_reminder': {
-        const { project_path = '.', focus_area = 'all', strict_mode = false } = args;
-
-        try {
-          // 搜索项目中的规范文档
-          const possibleRuleFiles = [
-            'CODING_STANDARDS.md',
-            'CODING_RULES.md',
-            'STYLE_GUIDE.md',
-            'CONTRIBUTING.md',
-            'README.md',
-            'docs/coding-standards.md',
-            'docs/style-guide.md',
-            '.github/CONTRIBUTING.md'
-          ];
-
-          let foundRules = [];
-          let rulesContent = '';
-
-          for (const fileName of possibleRuleFiles) {
-            const filePath = join(project_path, fileName);
-            if (existsSync(filePath)) {
-              try {
-                const content = await readFile(filePath, 'utf-8');
-                foundRules.push(fileName);
-                rulesContent += `\n\n### 📄 ${fileName}\n${content.slice(0, 2000)}${content.length > 2000 ? '...(内容过长已截断)' : ''}`;
-              } catch (err) {
-                // 忽略读取错误
-              }
-            }
-          }
-
-          const focusAreaText = {
-            all: '全部规范',
-            naming: '命名规范',
-            structure: '代码结构',
-            security: '安全规范',
-            performance: '性能优化',
-            documentation: '文档规范'
-          }[focus_area];
-
-          if (foundRules.length === 0) {
-            // 没有找到规范文档，返回通用提醒
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `📋 编码规范提醒\n\n` +
-                       `⚠️ 未在项目中找到编码规范文档\n\n` +
-                       `💡 建议创建以下文件之一：\n` +
-                       possibleRuleFiles.map(f => `• ${f}`).join('\n') + '\n\n' +
-                       `## 🎯 通用编码规范提醒\n\n` +
-                       `### 1. 代码可读性\n` +
-                       `• 使用清晰的变量和函数命名\n` +
-                       `• 保持函数简短，单一职责\n` +
-                       `• 添加必要的注释说明\n\n` +
-                       `### 2. 代码结构\n` +
-                       `• 遵循项目的目录结构规范\n` +
-                       `• 合理组织代码模块\n` +
-                       `• 避免循环依赖\n\n` +
-                       `### 3. 错误处理\n` +
-                       `• 使用try-catch处理异常\n` +
-                       `• 提供有意义的错误信息\n` +
-                       `• 记录关键错误日志\n\n` +
-                       `### 4. 性能考虑\n` +
-                       `• 避免不必要的计算\n` +
-                       `• 合理使用缓存\n` +
-                       `• 优化数据库查询\n\n` +
-                       `### 5. 安全实践\n` +
-                       `• 验证所有输入数据\n` +
-                       `• 防止SQL注入和XSS攻击\n` +
-                       `• 不暴露敏感信息\n\n` +
-                       `${strict_mode ? '⚠️ **严格模式已启用** - 请严格遵守以上规范，代码审查将更加严格！\n\n' : ''}` +
-                       `💡 Claude Code，请在编写代码时**严格遵守**以上规范！`
-                },
-              ],
-            };
-          }
-
-          // 找到规范文档，返回实际内容
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `📋 编码规范提醒 - ${focusAreaText}\n\n` +
-                     `✅ 找到 ${foundRules.length} 个规范文档:\n${foundRules.map(f => `• ${f}`).join('\n')}\n` +
-                     `${strict_mode ? '\n⚠️ **严格模式已启用** - 将严格检查规范遵守情况！\n' : ''}` +
-                     `\n---\n` +
-                     `${rulesContent}\n` +
-                     `\n---\n\n` +
-                     `## 🎯 重要提醒\n\n` +
-                     `Claude Code，请务必**严格遵守**以上项目规范：\n\n` +
-                     `### ✅ 编码时必须：\n` +
-                     `• 遵循项目的命名约定\n` +
-                     `• 保持代码风格一致\n` +
-                     `• 添加必要的注释和文档\n` +
-                     `• 进行充分的错误处理\n` +
-                     `• 考虑性能和安全性\n\n` +
-                     `### ❌ 编码时禁止：\n` +
-                     `• 违反项目规范\n` +
-                     `• 使用不规范的命名\n` +
-                     `• 忽略错误处理\n` +
-                     `• 写出低质量代码\n` +
-                     `• 忽视安全问题\n\n` +
-                     `${strict_mode ? '🚨 **严格模式警告**：任何违反规范的代码都将被要求重写！\n\n' : ''}` +
-                     `💡 请在每次编写代码前回顾这些规范，确保代码质量！`
-              },
-            ],
-          };
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: `❌ 读取规范文档时出错: ${error.message}\n\n` +
-                     `💡 将使用通用编码规范提醒。`
-              },
-            ],
-          };
-        }
-      }
-
       // === 搜索工具处理 ===
       case 'ai_search_web': {
-        const { query, engine = 'baidu', count = 10 } = args;
+        const rawQuery = normalizeString(args.query);
+        const requestedEngine = normalizeString(args.engine).toLowerCase();
+        const resolvedCount = clampNumber(args.count, 1, 50, 10);
+
+        if (!rawQuery) {
+          throw new Error('搜索关键词不能为空');
+        }
+
         const searchUrls = {
-          google: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-          bing: `https://www.bing.com/search?q=${encodeURIComponent(query)}`,
-          baidu: `https://www.baidu.com/s?wd=${encodeURIComponent(query)}`,
-          sogou: `https://www.sogou.com/web?query=${encodeURIComponent(query)}`
+          google: `https://www.google.com/search?q=${encodeURIComponent(rawQuery)}&num=${resolvedCount}`,
+          bing: `https://www.bing.com/search?q=${encodeURIComponent(rawQuery)}&count=${resolvedCount}`,
+          baidu: `https://www.baidu.com/s?wd=${encodeURIComponent(rawQuery)}&rn=${resolvedCount}`,
+          sogou: `https://www.sogou.com/web?query=${encodeURIComponent(rawQuery)}&num=${resolvedCount}`
         };
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `🔍 网络搜索结果\n\n` +
-                   `🎯 搜索关键词: ${query}\n` +
-                   `🌐 搜索引擎: ${engine.toUpperCase()}\n` +
-                   `📊 期望结果数: ${count}\n\n` +
-                   `🔗 搜索链接: ${searchUrls[engine]}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实搜索结果。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${searchUrls[engine]}",\n` +
-                   `  prompt: "提取前${count}条搜索结果的标题、链接和摘要"\n` +
-                   `})\n` +
-                   `\`\`\`\n\n` +
-                   `💡 搜索技巧:\n` +
-                   `• 使用双引号精确匹配: "${query}"\n` +
-                   `• 使用减号排除: ${query} -排除词\n` +
-                   `• 限定网站: site:github.com ${query}`
-            },
-          ],
+        const engineNames = {
+          google: 'Google',
+          bing: 'Bing (必应)',
+          baidu: '百度',
+          sogou: '搜狗'
         };
+
+        const resolvedEngine = pickKey(searchUrls, requestedEngine, 'baidu');
+        const searchUrl = searchUrls[resolvedEngine];
+
+        const tips = [
+          `精确匹配: "${rawQuery}"`,
+          `排除关键词: ${rawQuery} -排除词`,
+          `限定站点: site:github.com ${rawQuery}`,
+          `文件类型: ${rawQuery} filetype:pdf`,
+          `时间范围: ${rawQuery} after:2023`,
+        ];
+
+        const relatedSearches = [
+          `${rawQuery} 教程`,
+          `${rawQuery} 最佳实践`,
+          `${rawQuery} 示例`,
+          `${rawQuery} 文档`
+        ];
+
+        const detailsContent = `🔍 网络搜索\n\n` +
+          `**搜索关键词**: ${rawQuery}\n` +
+          `**搜索引擎**: ${engineNames[resolvedEngine]}\n` +
+          `**期望结果数**: ${resolvedCount} 条\n\n` +
+          `---\n\n` +
+          `🔗 **搜索链接**: ${searchUrl}\n\n` +
+          `⚠️ **请使用 WebFetch 工具获取搜索结果**:\n` +
+          `\`\`\`javascript\n` +
+          `WebFetch({\n` +
+          `  url: "${searchUrl}",\n` +
+          `  prompt: "提取前${resolvedCount}条搜索结果，包括：标题、链接、摘要"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **高级搜索技巧**:\n` +
+          tips.map(tip => `• ${tip}`).join('\n') +
+          `\n\n📌 **相关搜索建议**:\n` +
+          relatedSearches.map(s => `• ${s}`).join('\n') +
+          `\n\n🌐 **其他搜索引擎**:\n` +
+          Object.keys(searchUrls)
+            .filter(e => e !== resolvedEngine)
+            .map(e => `• ${engineNames[e]}: ${searchUrls[e]}`)
+            .join('\n');
+
+        const filepath = await saveSearchResult('web-search', rawQuery, detailsContent);
+
+        return makeTextResponse(
+          `🔍 **网络搜索** (${engineNames[resolvedEngine]})\n\n` +
+          `**关键词**: ${rawQuery}\n` +
+          `**搜索链接**: ${searchUrl}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       case 'ai_search_github': {
-        const { query, type = 'repositories', language = '', sort = 'stars' } = args;
-        let searchUrl = `https://github.com/search?q=${encodeURIComponent(query)}&type=${type}`;
-        if (language) searchUrl += `&l=${encodeURIComponent(language)}`;
-        searchUrl += `&s=${sort}`;
+        const rawQuery = normalizeString(args.query);
+        const languageFilter = normalizeString(args.language);
+        const requestedType = normalizeString(args.type).toLowerCase();
+        const requestedSort = normalizeString(args.sort).toLowerCase();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `🐙 GitHub搜索结果\n\n` +
-                   `🎯 搜索关键词: ${query}\n` +
-                   `📂 搜索类型: ${type}\n` +
-                   `💻 语言筛选: ${language || '全部语言'}\n` +
-                   `📊 排序方式: ${sort}\n\n` +
-                   `🔗 搜索链接: ${searchUrl}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实搜索结果。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${searchUrl}",\n` +
-                   `  prompt: "提取前10个仓库的名称、描述、star数和链接"\n` +
-                   `})\n` +
-                   `\`\`\``
-            },
-          ],
+        if (!rawQuery) {
+          throw new Error('搜索关键词不能为空');
+        }
+
+        const typeNames = {
+          repositories: '仓库',
+          code: '代码',
+          issues: '问题',
+          users: '用户'
         };
+
+        const sortNames = {
+          stars: 'Star数',
+          forks: 'Fork数',
+          updated: '更新时间'
+        };
+
+        const typeKey = pickKey(typeNames, requestedType, 'repositories');
+        const sortKey = pickKey(sortNames, requestedSort, 'stars');
+
+        // 构建搜索URL
+        let searchUrl = `https://github.com/search?q=${encodeURIComponent(rawQuery)}`;
+        if (languageFilter) searchUrl += `+language:${encodeURIComponent(languageFilter)}`;
+        searchUrl += `&type=${typeKey}&s=${sortKey}&o=desc`;
+
+        // GitHub 搜索技巧
+        const tips = [
+          `Stars数量: ${rawQuery} stars:>1000`,
+          `Fork数量: ${rawQuery} forks:>100`,
+          `特定语言: ${rawQuery} language:javascript`,
+          `最近更新: ${rawQuery} pushed:>2024-01-01`,
+          `主题标签: ${rawQuery} topic:react`,
+          `组织仓库: ${rawQuery} org:facebook`,
+          `仓库大小: ${rawQuery} size:>10000`
+        ];
+
+        // 相关搜索建议
+        const relatedSearches = [];
+        if (typeKey === 'repositories') {
+          relatedSearches.push(
+            `${rawQuery} stars:>1000`,
+            `${rawQuery} language:${languageFilter || 'javascript'}`,
+            `awesome ${rawQuery}`
+          );
+        } else if (typeKey === 'code') {
+          relatedSearches.push(
+            `${rawQuery} extension:js`,
+            `${rawQuery} path:src`,
+            `${rawQuery} filename:README`
+          );
+        }
+
+        const detailsContent = `🐙 GitHub 搜索\n\n` +
+          `**搜索关键词**: ${rawQuery}\n` +
+          `**搜索类型**: ${typeNames[typeKey]}\n` +
+          `**编程语言**: ${languageFilter || '全部语言'}\n` +
+          `**排序方式**: ${sortNames[sortKey]}\n\n` +
+          `---\n\n` +
+          `🔗 **搜索链接**: ${searchUrl}\n\n` +
+          `⚠️ **请使用 WebFetch 工具获取搜索结果**:\n` +
+          `\`\`\`javascript\n` +
+          `WebFetch({\n` +
+          `  url: "${searchUrl}",\n` +
+          `  prompt: "提取前10个${typeNames[typeKey]}的名称、描述、${typeKey === 'repositories' ? 'Star数、Fork数' : '相关信息'}和链接"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **GitHub 高级搜索技巧**:\n` +
+          tips.map(tip => `• ${tip}`).join('\n') +
+          (relatedSearches.length > 0
+            ? `\n\n📌 **相关搜索建议**:\n` + relatedSearches.map(s => `• ${s}`).join('\n')
+            : '') +
+          `\n\n📚 **更多搜索类型**:\n` +
+          Object.keys(typeNames)
+            .filter(t => t !== typeKey)
+            .map((t) => {
+              let altUrl = `https://github.com/search?q=${encodeURIComponent(rawQuery)}`;
+              if (languageFilter) altUrl += `+language:${encodeURIComponent(languageFilter)}`;
+              altUrl += `&type=${t}&s=${sortKey}&o=desc`;
+              return `• ${typeNames[t]}: ${altUrl}`;
+            })
+            .join('\n');
+
+        const filepath = await saveSearchResult('github-search', rawQuery, detailsContent);
+
+        return makeTextResponse(
+          `🐙 **GitHub搜索**\n\n` +
+          `**关键词**: ${rawQuery}\n` +
+          `**搜索链接**: ${searchUrl}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       case 'ai_search_stackoverflow': {
-        const { query, tags = '', sort = 'relevance' } = args;
-        let searchUrl = `https://stackoverflow.com/search?q=${encodeURIComponent(query)}`;
-        if (tags) searchUrl += `+[${tags.split(',').map(t => t.trim()).join(']+')}]`;
-        searchUrl += `&sort=${sort}`;
+        const rawQuery = normalizeString(args.query);
+        const tagsInput = normalizeString(args.tags);
+        const requestedSort = normalizeString(args.sort).toLowerCase();
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `💬 StackOverflow搜索结果\n\n` +
-                   `🎯 搜索关键词: ${query}\n` +
-                   `🏷️ 标签筛选: ${tags || '无限制'}\n` +
-                   `📊 排序方式: ${sort}\n\n` +
-                   `🔗 搜索链接: ${searchUrl}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实搜索结果。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${searchUrl}",\n` +
-                   `  prompt: "提取前10个问题的标题、投票数、回答数和链接"\n` +
-                   `})\n` +
-                   `\`\`\``
-            },
-          ],
+        if (!rawQuery) {
+          throw new Error('搜索关键词不能为空');
+        }
+
+        const sortNames = {
+          relevance: '相关性',
+          votes: '投票数',
+          creation: '创建时间',
+          activity: '活跃度'
         };
+
+        const sortKey = pickKey(sortNames, requestedSort, 'relevance');
+
+        let searchQuery = rawQuery;
+        let tagList = [];
+        if (tagsInput) {
+          tagList = tagsInput
+            .split(',')
+            .map((t) => normalizeString(t))
+            .filter(Boolean);
+          if (tagList.length > 0) {
+            searchQuery += ` ${tagList.map(t => `[${t}]`).join(' ')}`;
+          }
+        }
+
+        const searchUrl = `https://stackoverflow.com/search?q=${encodeURIComponent(searchQuery)}&sort=${sortKey}`;
+        const tagsDisplay = tagList.length > 0 ? tagList.join(', ') : '无';
+
+        // StackOverflow 搜索技巧
+        const tips = [
+          `标签搜索: [javascript] ${rawQuery}`,
+          `已回答问题: ${rawQuery} is:answer`,
+          `已接受答案: ${rawQuery} isaccepted:yes`,
+          `投票数筛选: ${rawQuery} score:5..`,
+          `多个标签: [react] [hooks] ${rawQuery}`,
+          `代码搜索: code:"${rawQuery}"`,
+          `标题搜索: title:"${rawQuery}"`
+        ];
+
+        // 热门技术标签推荐
+        const popularTags = [
+          'javascript', 'python', 'java', 'react', 'node.js',
+          'typescript', 'html', 'css', 'sql', 'docker'
+        ];
+
+        const detailsContent = `💬 StackOverflow 搜索\n\n` +
+          `**搜索关键词**: ${rawQuery}\n` +
+          `**标签筛选**: ${tagsDisplay}\n` +
+          `**排序方式**: ${sortNames[sortKey]}\n\n` +
+          `---\n\n` +
+          `🔗 **搜索链接**: ${searchUrl}\n\n` +
+          `⚠️ **请使用 WebFetch 工具获取搜索结果**:\n` +
+          `\`\`\`javascript\n` +
+          `WebFetch({\n` +
+          `  url: "${searchUrl}",\n` +
+          `  prompt: "提取前10个问题的标题、投票数、回答数、是否已解决和链接"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **高级搜索技巧**:\n` +
+          tips.map(tip => `• ${tip}`).join('\n') +
+          `\n\n🏷️ **热门技术标签**:\n` +
+          popularTags.map(tag => `• [${tag}]`).join(' ') +
+          `\n\n📊 **其他排序方式**:\n` +
+          Object.keys(sortNames)
+            .filter(s => s !== sortKey)
+            .map((s) =>
+              `• ${sortNames[s]}: https://stackoverflow.com/search?q=${encodeURIComponent(searchQuery)}&sort=${s}`
+            )
+            .join('\n');
+
+        const filepath = await saveSearchResult('stackoverflow-search', rawQuery, detailsContent);
+
+        return makeTextResponse(
+          `💬 **StackOverflow搜索**\n\n` +
+          `**关键词**: ${rawQuery}\n` +
+          `**搜索链接**: ${searchUrl}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       case 'ai_search_npm': {
-        const { query, size = 10 } = args;
-        const searchUrl = `https://www.npmjs.com/search?q=${encodeURIComponent(query)}`;
+        const rawQuery = normalizeString(args.query);
+        const resolvedSize = clampNumber(args.size, 1, 100, 10);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `📦 NPM包搜索结果\n\n` +
-                   `🎯 搜索关键词: ${query}\n` +
-                   `📊 期望结果数: ${size}\n\n` +
-                   `🔗 搜索链接: ${searchUrl}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实搜索结果。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${searchUrl}",\n` +
-                   `  prompt: "提取前${size}个包的名称、描述、版本号、周下载量和链接"\n` +
-                   `})\n` +
-                   `\`\`\``
-            },
-          ],
-        };
+        if (!rawQuery) {
+          throw new Error('搜索关键词不能为空');
+        }
+
+        const searchUrl = `https://www.npmjs.com/search?q=${encodeURIComponent(rawQuery)}`;
+        const registryUrl = `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(rawQuery)}&size=${resolvedSize}`;
+
+        // NPM 搜索技巧
+        const tips = [
+          `精确包名: ${rawQuery} (使用完整包名)`,
+          `关键词搜索: keywords:${rawQuery}`,
+          `作者搜索: author:${rawQuery}`,
+          `维护者: maintainer:${rawQuery}`,
+          `作用域包: @scope/${rawQuery}`,
+          `特定版本: ${rawQuery}@latest`
+        ];
+
+        // 相关搜索建议
+        const relatedSearches = [
+          `${rawQuery} typescript`,
+          `${rawQuery} cli`,
+          `${rawQuery} plugin`,
+          `@types/${rawQuery}`
+        ];
+
+        // 热门类别推荐
+        const categories = [
+          'react', 'vue', 'express', 'webpack',
+          'babel', 'eslint', 'testing', 'cli-tools'
+        ];
+
+        const detailsContent = `📦 NPM 包搜索\n\n` +
+          `**搜索关键词**: ${rawQuery}\n` +
+          `**期望结果数**: ${resolvedSize} 个\n\n` +
+          `---\n\n` +
+          `🔗 **网页搜索**: ${searchUrl}\n` +
+          `🔗 **API搜索**: ${registryUrl}\n\n` +
+          `⚠️ **请使用 WebFetch 工具获取搜索结果**:\n` +
+          `\`\`\`javascript\n` +
+          `// 方式1: 网页搜索\n` +
+          `WebFetch({\n` +
+          `  url: "${searchUrl}",\n` +
+          `  prompt: "提取前${resolvedSize}个包的：包名、描述、版本号、周下载量、最后更新时间"\n` +
+          `})\n\n` +
+          `// 方式2: API搜索 (推荐，结构化数据)\n` +
+          `WebFetch({\n` +
+          `  url: "${registryUrl}",\n` +
+          `  prompt: "解析JSON数据，提取包的名称、描述、版本、作者和下载统计"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **NPM 搜索技巧**:\n` +
+          tips.map(tip => `• ${tip}`).join('\n') +
+          `\n\n📌 **相关搜索建议**:\n` +
+          relatedSearches.map(s => `• ${s}`).join('\n') +
+          `\n\n🏷️ **热门包分类**:\n` +
+          categories.map(cat => `• ${cat}`).join(' ') +
+          `\n\n📚 **直接访问包详情**: https://www.npmjs.com/package/${rawQuery}`;
+
+        const filepath = await saveSearchResult('npm-search', rawQuery, detailsContent);
+
+        return makeTextResponse(
+          `📦 **NPM包搜索**\n\n` +
+          `**关键词**: ${rawQuery}\n` +
+          `**搜索链接**: ${searchUrl}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       case 'ai_search_docs': {
-        const { query, framework = 'general' } = args;
+        const rawQuery = normalizeString(args.query);
+        const requestedFramework = normalizeString(args.framework).toLowerCase();
+
+        if (!rawQuery) {
+          throw new Error('搜索关键词不能为空');
+        }
+
         const docUrls = {
-          react: `https://react.dev/?search=${encodeURIComponent(query)}`,
-          vue: `https://vuejs.org/search/?query=${encodeURIComponent(query)}`,
-          angular: `https://angular.io/api?query=${encodeURIComponent(query)}`,
-          nodejs: `https://nodejs.org/api/all.html#all_${encodeURIComponent(query)}`,
-          python: `https://docs.python.org/3/search.html?q=${encodeURIComponent(query)}`,
-          java: `https://docs.oracle.com/en/java/javase/search.html?q=${encodeURIComponent(query)}`,
-          general: `https://developer.mozilla.org/zh-CN/search?q=${encodeURIComponent(query)}`
+          react: `https://react.dev/?search=${encodeURIComponent(rawQuery)}`,
+          vue: `https://cn.vuejs.org/search/?query=${encodeURIComponent(rawQuery)}`,
+          angular: `https://angular.io/api?query=${encodeURIComponent(rawQuery)}`,
+          nodejs: `https://nodejs.org/api/all.html`,
+          python: `https://docs.python.org/zh-cn/3/search.html?q=${encodeURIComponent(rawQuery)}`,
+          java: `https://docs.oracle.com/en/java/javase/21/docs/api/search.html?q=${encodeURIComponent(rawQuery)}`,
+          general: `https://developer.mozilla.org/zh-CN/search?q=${encodeURIComponent(rawQuery)}`
         };
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `📚 技术文档搜索结果\n\n` +
-                   `🎯 搜索关键词: ${query}\n` +
-                   `📖 文档框架: ${framework.toUpperCase()}\n\n` +
-                   `🔗 搜索链接: ${docUrls[framework]}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实文档内容。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${docUrls[framework]}",\n` +
-                   `  prompt: "提取与'${query}'相关的API文档、使用示例和说明"\n` +
-                   `})\n` +
-                   `\`\`\``
-            },
-          ],
+        const frameworkNames = {
+          react: 'React',
+          vue: 'Vue.js',
+          angular: 'Angular',
+          nodejs: 'Node.js',
+          python: 'Python',
+          java: 'Java',
+          general: 'MDN Web Docs'
         };
+
+        const frameworkTips = {
+          react: ['Hooks', 'Components', 'Props', 'State', 'Context', 'useEffect'],
+          vue: ['组合式API', '响应式', 'computed', 'watch', '组件', '指令'],
+          angular: ['Directives', 'Services', 'Modules', 'Components', 'Routing'],
+          nodejs: ['fs', 'http', 'path', 'events', 'stream', 'crypto'],
+          python: ['列表推导', '装饰器', '生成器', '异步', 'pandas', 'numpy'],
+          java: ['Collections', 'Stream', 'Optional', 'Lambda', 'Generic'],
+          general: ['HTML', 'CSS', 'JavaScript', 'Web API', 'HTTP']
+        };
+
+        const resolvedFramework = pickKey(docUrls, requestedFramework, 'general');
+
+        const detailsContent = `📚 ${frameworkNames[resolvedFramework]} 文档搜索\n\n` +
+          `**搜索关键词**: ${rawQuery}\n` +
+          `**框架/语言**: ${frameworkNames[resolvedFramework]}\n\n` +
+          `---\n\n` +
+          `🔗 **文档链接**: ${docUrls[resolvedFramework]}\n\n` +
+          `⚠️ **请使用 WebFetch 工具获取文档内容**:\n` +
+          `\`\`\`javascript\n` +
+          `WebFetch({\n` +
+          `  url: "${docUrls[resolvedFramework]}",\n` +
+          `  prompt: "查找'${rawQuery}'相关的：API说明、参数列表、返回值、使用示例、注意事项"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **${frameworkNames[resolvedFramework]} 常用主题**:\n` +
+          frameworkTips[resolvedFramework].map(tip => `• ${tip}`).join(' | ') +
+          `\n\n📚 **其他文档资源**:\n` +
+          Object.keys(docUrls)
+            .filter(f => f !== resolvedFramework)
+            .map(f => `• ${frameworkNames[f]}: ${docUrls[f].replace(/\?.*$/, '')}`)
+            .slice(0, 4)
+            .join('\n');
+
+        const filepath = await saveSearchResult('docs-search', rawQuery, detailsContent);
+
+        return makeTextResponse(
+          `📚 **技术文档搜索**\n\n` +
+          `**关键词**: ${rawQuery}\n` +
+          `**搜索链接**: ${docUrls[resolvedFramework]}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       case 'ai_search_api_reference': {
-        const { api_name, platform } = args;
-        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(platform + ' ' + api_name + ' api documentation')}`;
+        const rawApiName = normalizeString(args.api_name);
+        const rawPlatform = normalizeString(args.platform);
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `🔗 API参考搜索结果\n\n` +
-                   `📦 平台/库: ${platform}\n` +
-                   `🎯 API名称: ${api_name}\n\n` +
-                   `🔗 搜索链接: ${searchUrl}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实API文档。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${searchUrl}",\n` +
-                   `  prompt: "找到${platform}的${api_name} API官方文档链接，提取API用法、参数说明和示例代码"\n` +
-                   `})\n` +
-                   `\`\`\``
-            },
-          ],
+        if (!rawApiName) {
+          throw new Error('API名称不能为空');
+        }
+        if (!rawPlatform) {
+          throw new Error('平台/库名称不能为空');
+        }
+
+        const searchUrls = {
+          google: `https://www.google.com/search?q=${encodeURIComponent(`${rawPlatform} ${rawApiName} API documentation`)}`,
+          devdocs: `https://devdocs.io/#q=${encodeURIComponent(`${rawPlatform} ${rawApiName}`)}`,
+          github: `https://github.com/search?q=${encodeURIComponent(`${rawPlatform} ${rawApiName}`)}&type=code`
         };
+
+        // 常见平台的直接文档链接
+        const platformDocs = {
+          express: `https://expressjs.com/en/api.html`,
+          axios: `https://axios-http.com/docs/api_intro`,
+          lodash: `https://lodash.com/docs/`,
+          mongoose: `https://mongoosejs.com/docs/api.html`,
+          sequelize: `https://sequelize.org/api/`,
+          'socket.io': `https://socket.io/docs/v4/`,
+          jwt: `https://github.com/auth0/node-jsonwebtoken#readme`
+        };
+
+        const directDoc = platformDocs[rawPlatform.toLowerCase()];
+
+        const detailsContent = `🔗 API 参考搜索\n\n` +
+          `**平台/库**: ${rawPlatform}\n` +
+          `**API名称**: ${rawApiName}\n\n` +
+          `---\n\n` +
+          `🔍 **搜索资源**:\n` +
+          `• Google: ${searchUrls.google}\n` +
+          `• DevDocs: ${searchUrls.devdocs}\n` +
+          `• GitHub: ${searchUrls.github}\n` +
+          (directDoc ? `• 官方文档: ${directDoc}\n` : '') +
+          `\n⚠️ **请使用 WebFetch 工具获取API文档**:\n` +
+          `\`\`\`javascript\n` +
+          `// 推荐：先搜索官方文档\n` +
+          `WebFetch({\n` +
+          `  url: "${directDoc || searchUrls.google}",\n` +
+          `  prompt: "查找'${rawApiName}'的：函数签名、参数说明、返回值、使用示例、注意事项"\n` +
+          `})\n\n` +
+          `// 备选：在DevDocs搜索\n` +
+          `WebFetch({\n` +
+          `  url: "${searchUrls.devdocs}",\n` +
+          `  prompt: "提取${rawPlatform}的${rawApiName} API详细文档"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **查询提示**:\n` +
+          `• 精确搜索: "${rawPlatform}.${rawApiName}()"\n` +
+          `• 示例代码: ${rawPlatform} ${rawApiName} example\n` +
+          `• 参数说明: ${rawPlatform} ${rawApiName} parameters\n` +
+          `• 错误处理: ${rawPlatform} ${rawApiName} error handling\n\n` +
+          `📚 **相关资源**:\n` +
+          `• NPM包: https://www.npmjs.com/package/${rawPlatform}\n` +
+          `• GitHub仓库: https://github.com/search?q=${encodeURIComponent(rawPlatform)}&type=repositories\n` +
+          `• StackOverflow: https://stackoverflow.com/search?q=${encodeURIComponent(`${rawPlatform} ${rawApiName}`)}`;
+
+        const filepath = await saveSearchResult('api-search', rawApiName, detailsContent);
+
+        return makeTextResponse(
+          `🔗 **API参考搜索**\n\n` +
+          `**关键词**: ${rawApiName}\n` +
+          `**搜索链接**: ${directDoc || searchUrls.google}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       // === 国内搜索工具 ===
       case 'ai_search_wechat_docs': {
-        const { query, platform = 'all' } = args;
+        const rawQuery = normalizeString(args.query);
+        const platformInput = normalizeString(args.platform).toLowerCase();
+
+        if (!rawQuery) {
+          throw new Error('搜索关键词不能为空');
+        }
+
         const platformUrls = {
-          miniprogram: `https://developers.weixin.qq.com/miniprogram/dev/api/search.html?query=${encodeURIComponent(query)}`,
-          officialaccount: `https://developers.weixin.qq.com/doc/offiaccount/search.html?query=${encodeURIComponent(query)}`,
-          open: `https://developers.weixin.qq.com/doc/oplatform/search.html?query=${encodeURIComponent(query)}`,
-          payment: `https://pay.weixin.qq.com/wiki/doc/api/search.php?query=${encodeURIComponent(query)}`,
-          all: `https://developers.weixin.qq.com/search?query=${encodeURIComponent(query)}`
+          miniprogram: `https://developers.weixin.qq.com/miniprogram/dev/framework/`,
+          officialaccount: `https://developers.weixin.qq.com/doc/offiaccount/Getting_Started/Overview.html`,
+          open: `https://developers.weixin.qq.com/doc/oplatform/Third-party_Platforms/2.0/getting_started/how_to_read.html`,
+          payment: `https://pay.weixin.qq.com/wiki/doc/apiv3/index.shtml`,
+          all: `https://developers.weixin.qq.com/`
         };
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `📱 微信开发者文档搜索\n\n` +
-                   `🎯 搜索关键词: ${query}\n` +
-                   `📂 平台类型: ${platform}\n\n` +
-                   `🔗 搜索链接: ${platformUrls[platform]}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实文档内容。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${platformUrls[platform]}",\n` +
-                   `  prompt: "提取与'${query}'相关的API文档、使用说明和代码示例"\n` +
-                   `})\n` +
-                   `\`\`\``
-            },
-          ],
+        // 构建搜索URL（微信文档使用百度站内搜索）
+        const searchUrl = `https://www.baidu.com/s?wd=site:developers.weixin.qq.com ${encodeURIComponent(rawQuery)}`;
+
+        const platformNames = {
+          miniprogram: '小程序',
+          officialaccount: '公众号',
+          open: '开放平台',
+          payment: '微信支付',
+          all: '全平台'
         };
+
+        const resolvedPlatform = pickKey(platformNames, platformInput, 'all');
+
+        // 常用API分类
+        const apiCategories = {
+          miniprogram: ['wx.request', 'wx.getUserInfo', 'wx.login', 'wx.showToast', 'wx.navigateTo'],
+          officialaccount: ['接收消息', '发送消息', '自定义菜单', '网页授权', '模板消息'],
+          payment: ['JSAPI支付', '小程序支付', 'APP支付', '退款', '对账单']
+        };
+
+        const detailsContent = `📱 微信开发者文档搜索\n\n` +
+          `**搜索关键词**: ${rawQuery}\n` +
+          `**平台类型**: ${platformNames[resolvedPlatform]}\n\n` +
+          `---\n\n` +
+          `🔗 **站内搜索**: ${searchUrl}\n` +
+          `🔗 **${platformNames[resolvedPlatform]}文档**: ${platformUrls[resolvedPlatform]}\n\n` +
+          `⚠️ **请使用 WebFetch 工具获取搜索结果**:\n` +
+          `\`\`\`javascript\n` +
+          `// 方式1: 百度站内搜索\n` +
+          `WebFetch({\n` +
+          `  url: "${searchUrl}",\n` +
+          `  prompt: "提取微信文档中关于'${rawQuery}'的搜索结果"\n` +
+          `})\n\n` +
+          `// 方式2: 直接访问文档首页\n` +
+          `WebFetch({\n` +
+          `  url: "${platformUrls[resolvedPlatform]}",\n` +
+          `  prompt: "在文档中查找'${rawQuery}'相关内容"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **常用${platformNames[resolvedPlatform]}API**:\n` +
+          (apiCategories[resolvedPlatform] || ['基础组件', 'API接口', '开发工具']).map(api => `• ${api}`).join(' | ') +
+          `\n\n📚 **其他微信平台**:\n` +
+          Object.keys(platformNames)
+            .filter(p => p !== resolvedPlatform)
+            .map(p => `• ${platformNames[p]}: ${platformUrls[p]}`)
+            .slice(0, 3)
+            .join('\n') +
+          `\n\n🔗 **开发者社区**: https://developers.weixin.qq.com/community/`;
+
+        const filepath = await saveSearchResult('wechat-docs', rawQuery, detailsContent);
+
+        return makeTextResponse(
+          `📱 **微信开发者文档搜索**\n\n` +
+          `**关键词**: ${rawQuery}\n` +
+          `**搜索链接**: ${searchUrl}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       case 'ai_search_csdn':
@@ -574,49 +828,114 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'ai_search_oschina':
       case 'ai_search_aliyun_docs':
       case 'ai_search_tencent_docs': {
-        const { query } = args;
+        const rawQuery = normalizeString(args.query);
+
+        if (!rawQuery) {
+          throw new Error('搜索关键词不能为空');
+        }
+
         const searchUrls = {
-          ai_search_csdn: `https://so.csdn.net/so/search?q=${encodeURIComponent(query)}`,
-          ai_search_juejin: `https://juejin.cn/search?query=${encodeURIComponent(query)}`,
-          ai_search_segmentfault: `https://segmentfault.com/search?q=${encodeURIComponent(query)}`,
-          ai_search_cnblogs: `https://zzk.cnblogs.com/s?w=${encodeURIComponent(query)}`,
-          ai_search_oschina: `https://www.oschina.net/search?q=${encodeURIComponent(query)}`,
-          ai_search_aliyun_docs: `https://help.aliyun.com/search?q=${encodeURIComponent(query)}`,
-          ai_search_tencent_docs: `https://cloud.tencent.com/document/search?q=${encodeURIComponent(query)}`
+          ai_search_csdn: `https://so.csdn.net/so/search?q=${encodeURIComponent(rawQuery)}`,
+          ai_search_juejin: `https://juejin.cn/search?query=${encodeURIComponent(rawQuery)}`,
+          ai_search_segmentfault: `https://segmentfault.com/search?q=${encodeURIComponent(rawQuery)}`,
+          ai_search_cnblogs: `https://zzk.cnblogs.com/s?w=${encodeURIComponent(rawQuery)}`,
+          ai_search_oschina: `https://www.oschina.net/search?scope=all&q=${encodeURIComponent(rawQuery)}`,
+          ai_search_aliyun_docs: `https://help.aliyun.com/search?spm=a2c4g.11186623.0.0&k=${encodeURIComponent(rawQuery)}`,
+          ai_search_tencent_docs: `https://cloud.tencent.com/search?s=doc&keyword=${encodeURIComponent(rawQuery)}`
         };
 
-        const platformNames = {
-          ai_search_csdn: 'CSDN',
-          ai_search_juejin: '掘金',
-          ai_search_segmentfault: 'SegmentFault',
-          ai_search_cnblogs: '博客园',
-          ai_search_oschina: '开源中国',
-          ai_search_aliyun_docs: '阿里云文档',
-          ai_search_tencent_docs: '腾讯云文档'
+        const platformInfo = {
+          ai_search_csdn: {
+            name: 'CSDN',
+            icon: '📝',
+            description: '中国最大的IT社区和服务平台',
+            tips: ['博客文章', '技术问答', '代码片段', '下载资源'],
+            homepage: 'https://www.csdn.net/',
+            toolKey: 'csdn-search'
+          },
+          ai_search_juejin: {
+            name: '掘金',
+            icon: '💎',
+            description: '面向开发者的技术内容分享平台',
+            tips: ['前端开发', '后端开发', 'Android', 'iOS', '人工智能'],
+            homepage: 'https://juejin.cn/',
+            toolKey: 'juejin-search'
+          },
+          ai_search_segmentfault: {
+            name: 'SegmentFault',
+            icon: '🔧',
+            description: '中文技术问答社区',
+            tips: ['技术问答', '技术文章', '活动沙龙', '编程挑战'],
+            homepage: 'https://segmentfault.com/',
+            toolKey: 'sf-search'
+          },
+          ai_search_cnblogs: {
+            name: '博客园',
+            icon: '📚',
+            description: '开发者的网上家园',
+            tips: ['.NET', 'C#', 'Java', 'Python', '数据库'],
+            homepage: 'https://www.cnblogs.com/',
+            toolKey: 'cnblogs-search'
+          },
+          ai_search_oschina: {
+            name: '开源中国',
+            icon: '🌐',
+            description: '中国最大的开源技术社区',
+            tips: ['开源项目', '技术资讯', '代码托管', '协作翻译'],
+            homepage: 'https://www.oschina.net/',
+            toolKey: 'oschina-search'
+          },
+          ai_search_aliyun_docs: {
+            name: '阿里云文档',
+            icon: '☁️',
+            description: '阿里云产品文档中心',
+            tips: ['ECS', 'OSS', 'RDS', 'SLB', '容器服务'],
+            homepage: 'https://help.aliyun.com/',
+            toolKey: 'aliyun-docs'
+          },
+          ai_search_tencent_docs: {
+            name: '腾讯云文档',
+            icon: '☁️',
+            description: '腾讯云产品文档中心',
+            tips: ['CVM', 'COS', 'CDN', 'SCF', '数据库'],
+            homepage: 'https://cloud.tencent.com/document/product',
+            toolKey: 'tencent-docs'
+          }
         };
 
+        const info = platformInfo[name];
         const searchUrl = searchUrls[name];
-        const platformName = platformNames[name];
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `🔍 ${platformName}搜索结果\n\n` +
-                   `🎯 搜索关键词: ${query}\n\n` +
-                   `🔗 搜索链接: ${searchUrl}\n\n` +
-                   `⚠️ **重要提示**：\n` +
-                   `Claude Code应该使用WebFetch工具访问上述URL以获取真实搜索结果。\n\n` +
-                   `示例命令:\n` +
-                   `\`\`\`\n` +
-                   `WebFetch({\n` +
-                   `  url: "${searchUrl}",\n` +
-                   `  prompt: "提取前10条搜索结果的标题、摘要和链接"\n` +
-                   `})\n` +
-                   `\`\`\``
-            },
-          ],
-        };
+        const detailsContent = `${info.icon} ${info.name} 搜索\n\n` +
+          `**搜索关键词**: ${rawQuery}\n` +
+          `**平台介绍**: ${info.description}\n\n` +
+          `---\n\n` +
+          `🔗 **搜索链接**: ${searchUrl}\n\n` +
+          `⚠️ **请使用 WebFetch 工具获取搜索结果**:\n` +
+          `\`\`\`javascript\n` +
+          `WebFetch({\n` +
+          `  url: "${searchUrl}",\n` +
+          `  prompt: "提取前10条搜索结果（标题、作者、发布时间、摘要、链接）"\n` +
+          `})\n` +
+          `\`\`\`\n\n` +
+          `---\n\n` +
+          `💡 **${info.name} 热门主题**:\n` +
+          info.tips.map(tip => `• ${tip}`).join(' | ') +
+          `\n\n🏠 **平台首页**: ${info.homepage}\n\n` +
+          `📌 **搜索建议**:\n` +
+          `• 使用精确关键词获得更好的结果\n` +
+          `• 结合多个平台搜索可获得更全面的信息\n` +
+          `• 关注文章的发布时间，优先查看最新内容`;
+
+        const filepath = await saveSearchResult(info.toolKey, rawQuery, detailsContent);
+
+        return makeTextResponse(
+          `${info.icon} **${info.name}搜索**\n\n` +
+          `**关键词**: ${rawQuery}\n` +
+          `**搜索链接**: ${searchUrl}\n\n` +
+          `✅ 详细信息已保存至: ${filepath || '保存失败'}\n` +
+          `💡 使用 WebFetch 工具访问搜索链接获取结果`
+        );
       }
 
       default:
@@ -638,8 +957,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Smart Search MCP Server v1.0.0 running on stdio');
-  console.error('Tools: 15 (1 coding rules + 14 search)');
+  console.error('Smart Search MCP Server v2.0.0 running on stdio');
+  console.error('Tools: 14 search tools');
 }
 
 main().catch((error) => {

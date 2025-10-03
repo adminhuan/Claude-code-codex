@@ -1,7 +1,7 @@
 #!/bin/bash
-# AI规则遵守MCP工具 - 项目安装脚本
+# Smart Search MCP - 项目安装脚本
 
-echo "🎯 AI规则遵守MCP工具项目安装器"
+echo "🎯 Smart Search MCP 项目安装器"
 echo "=================================="
 
 # 检查是否提供了项目路径
@@ -23,13 +23,20 @@ cd "$PROJECT_DIR"
 
 # 创建.mcp.json配置文件
 echo "⚙️ 创建MCP配置文件..."
+
+if [ -f .mcp.json ]; then
+    BACKUP=".mcp.json.backup.$(date +%Y%m%d%H%M%S)"
+    cp .mcp.json "$BACKUP"
+    echo "🗂️ 已备份现有 .mcp.json 至 $BACKUP"
+fi
+
 cat > .mcp.json << 'EOF'
 {
   "servers": {
-    "ai-rule-mcp": {
+    "smart-search-mcp": {
       "command": "npx",
-      "args": ["ai-rule-mcp-server@latest"],
-      "description": "AI规则遵守MCP工具 - 38个智能规则提醒、多模式工作流、AI协作功能"
+      "args": ["smart-search-mcp@latest"],
+      "description": "Smart Search MCP - 14个增强型国内外搜索工具"
     }
   }
 }
@@ -53,15 +60,16 @@ echo ""
 echo "📝 使用说明:"
 echo "1. 重启Claude Code"
 echo "2. 在当前项目目录中运行Claude Code"
-echo "3. 试试说: '请提醒我Python编码规范'"
-echo "4. 或者说: '切换到Plan模式'"
+echo "3. 试试说: '搜索 React Hooks 最佳实践'"
+echo "4. 或者说: '帮我找微信支付退款文档'"
 echo ""
-echo "🛠️ 可用工具包括:"
-echo "   • ai_rule_reminder - 智能规则提醒"
-echo "   • ai_switch_mode - 模式切换"
-echo "   • ai_create_plan - 创建开发计划"
-echo "   • ai_create_pr - 创建PR审查"
-echo "   • ai_check_compliance - 代码合规检查"
-echo "   • 还有33个其他工具..."
+echo "🔎 可用搜索工具示例:"
+echo "   • ai_search_web - 多引擎网络搜索"
+echo "   • ai_search_github - GitHub 仓库/代码检索"
+echo "   • ai_search_stackoverflow - 技术问答搜索"
+echo "   • ai_search_npm - NPM 包与API搜索"
+echo "   • ai_search_docs - React/Vue/Node等官方文档"
+echo "   • ai_search_wechat_docs - 微信开发者文档"
+echo "   • ai_search_aliyun_docs / ai_search_tencent_docs - 云厂商文档"
 echo ""
 echo "📚 更多信息: https://github.com/adminhuan/smart-search-mcp"

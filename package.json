@@ -1,7 +1,7 @@
 {
   "name": "smart-search-mcp",
-  "version": "1.0.0",
-  "description": "Smart Search MCP - 15个真实可用工具：14个智能搜索（通过WebFetch真实获取结果） + 1个编码规范提醒（读取项目文件并监督Claude Code遵守规则）",
+  "version": "2.0.0",
+  "description": "Smart Search MCP - 14个智能搜索工具（通过WebFetch真实获取搜索结果）",
   "main": "mcp_server_node.js",
   "type": "module",
   "bin": {
@@ -13,14 +13,15 @@
   },
   "keywords": [
     "mcp",
-    "ai",
-    "coding-standards",
-    "code-quality",
+    "smart-search",
     "claude-code",
-    "ai-tools",
-    "development-tools",
-    "python",
-    "model-context-protocol"
+    "search-tools",
+    "webfetch",
+    "developer-tools",
+    "github",
+    "stack-overflow",
+    "npm",
+    "documentation"
   ],
   "author": "AI Community",
   "license": "MIT",

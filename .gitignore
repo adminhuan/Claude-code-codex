@@ -145,3 +145,7 @@ ai_duet_outputs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Smart Search MCP
+.search-results/
+node_modules/
